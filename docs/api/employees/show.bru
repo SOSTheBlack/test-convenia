@@ -1,0 +1,15 @@
+meta {
+  name: show
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base-url}}{{prefix-api}}/employees/{{employees-id}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
