@@ -1,0 +1,15 @@
+meta {
+  name: destroy
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{base-url}}{{prefix-api}}/employees/{{employees-id}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
