@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# Node modules
+node_modules
+npm-debug.log
+
+# PHP
+vendor/
+composer.lock
+
+# Environment files
+.env.example
+.env.docker
+
+# Storage
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.phpunit.result.cache
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Script ponte para execução dos scripts Docker organizados
+# Este script redireciona para os scripts na pasta docker/scripts
+
+SCRIPT_DIR="docker/scripts"
+
+case "$1" in
+    setup)
+        $SCRIPT_DIR/docker-setup.sh
+        ;;
+    test)
+        $SCRIPT_DIR/docker-test.sh
+        ;;
+    restart)
+        $SCRIPT_DIR/restart-docker.sh
+        ;;
+    fix-git)
+        $SCRIPT_DIR/fix-git-ownership.sh
+        ;;
+    fix-permissions)
+        $SCRIPT_DIR/fix-permissions.sh
+        ;;
+    *)
+        echo "Uso: $0 {setup|test|restart|fix-git|fix-permissions}"
+        echo ""
+        echo "Comandos disponíveis:"
+        echo "  setup           - Configuração inicial completa do ambiente Docker"
+        echo "  test            - Executa os testes no ambiente Docker"
+        echo "  restart         - Reinicia completamente os containers Docker"
+        echo "  fix-git         - Corrige problema de propriedade do Git no container"
+        echo "  fix-permissions - Corrige permissões dos diretórios storage do Laravel"
+        exit 1
+esac

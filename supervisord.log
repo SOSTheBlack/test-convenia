@@ -1,0 +1,12 @@
+2025-09-09 22:15:03,665 INFO Set uid to user 0 succeeded
+2025-09-09 22:15:03,666 INFO supervisord started with pid 1
+2025-09-09 22:15:04,670 INFO spawned: 'nginx' with pid 7
+2025-09-09 22:15:04,673 INFO spawned: 'php-fpm' with pid 8
+2025-09-09 22:15:05,730 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-09 22:15:05,731 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-09 22:15:32,955 INFO reaped unknown pid 41 (exit status 0)
+2025-09-09 22:20:20,526 INFO reaped unknown pid 75 (exit status 0)
+2025-09-09 22:24:45,315 WARN received SIGQUIT indicating exit request
+2025-09-09 22:24:45,315 INFO waiting for nginx, php-fpm to die
+2025-09-09 22:24:45,328 INFO stopped: php-fpm (exit status 0)
+2025-09-09 22:24:45,334 INFO stopped: nginx (exit status 0)

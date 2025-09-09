@@ -18,7 +18,45 @@ Que tenha um excelente desenvolvimento! :wink:
 
 ## 🚀 Instalação e Configuração
 
-Siga os passos abaixo para rodar o projeto localmente:
+### 🐳 Com Docker (Recomendado)
+
+Para rodar o projeto com Docker (PHP 8.4 + Laravel 12):
+
+```bash
+# Clone o repositório
+git clone <url-do-repo>
+cd laravel-engineer
+
+# Execute o setup automático
+./docker-run setup
+
+# Acesse: http://localhost
+```
+
+**Comandos úteis com Docker:**
+
+```bash
+# Iniciar ambiente
+docker-compose up -d
+
+# Parar ambiente
+docker-compose down
+
+# Rodar comandos artisan
+docker-compose exec app php artisan migrate
+docker-compose exec app php artisan test
+
+# Acessar container
+docker-compose exec app bash
+```
+
+📋 **Acessos:**
+- **Aplicação**: http://localhost
+- **MailHog (emails)**: http://localhost:8025
+
+### 🔧 Instalação Local
+
+Siga os passos abaixo para rodar o projeto localmente sem Docker:
 
 ```bash
 # Clone o repositório
