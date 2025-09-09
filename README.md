@@ -1,12 +1,11 @@
 # Convenia
 
+
 ## Avaliação Técnica - Backend
 
-> Esta avaliação consiste em completar a API de colaboradores de uma empresa.
-> A aplicação está quase completa: Falta apenas a carga de colaboradores!
-> Esperamos avaliar sua melhor implementação para o contexto que estamos propondo.
+Bem-vindo ao desafio técnico Convenia! Este projeto é uma API para manipulação de colaboradores de uma empresa, já com autenticação, models e rotas básicas implementadas. Seu objetivo é completar a funcionalidade de carga de colaboradores via CSV.
 
-Que tenha um excelente desenvolvimento :wink:
+Que tenha um excelente desenvolvimento! :wink:
 
 ### Desafio
 
@@ -14,19 +13,81 @@ Que tenha um excelente desenvolvimento :wink:
 > O desafio consiste em configurar esta aplicação e adicionar o envio de um arquivo CSV para criar os colaboradores no banco de dados e atualizar seus dados caso sejam submetidos novamente com novos dados.
 > Faça um Fork deste repositório. Avaliaremos cuidadosamente o seu Merge Request, então capriche no seu desenvolvimento. Observaremos uso de boas práticas, testes e seus commits.
 
-### Configuração
 
-Após clonar o repositório e adentrar o diretório do projeto, execute:
+---
 
-```shell
+## 🚀 Instalação e Configuração
+
+Siga os passos abaixo para rodar o projeto localmente:
+
+```bash
+# Clone o repositório
+git clone <url-do-repo>
+cd laravel-engineer
+
+# Copie o arquivo de ambiente
 cp .env.example .env
+
+# Crie o banco SQLite
 touch database/database.sqlite
+
+# Instale as dependências
 composer install
+
+# Gere a chave da aplicação
 php artisan key:generate
+
+# Execute as migrações
 php artisan migrate
+
+# Gere as chaves do Passport
+php artisan passport:keys
+
+# Instale o Passport (cria clientes OAuth)
 php artisan passport:install
+
+# Execute os testes
 php vendor/bin/phpunit
+
+# Inicie o servidor local
+php artisan serve
 ```
+
+---
+
+## 📦 Versões Utilizadas
+
+| Componente           | Versão         |
+|----------------------|---------------|
+| Laravel Framework    | 12.x          |
+| PHP                  | 8.4           |
+| Laravel Passport     | 12.x          |
+| PHPUnit              | 11.x          |
+| GuzzleHTTP           | 7.x           |
+| Laravel Sail         | 1.x           |
+| Faker                | 1.x           |
+| Mockery              | 1.x           |
+| Collision            | 8.x           |
+| Laravel Pint         | 1.x           |
+
+---
+
+## ✅ Testes
+
+Todos os testes automatizados estão passando:
+
+```
+PHPUnit 11.x by Sebastian Bergmann and contributors.
+Runtime: PHP 8.4.1
+
+........                                                            8 / 8 (100%)
+
+Tests: 8, Assertions: 18, PHPUnit Deprecations: 1.
+OK! ✅
+```
+
+---
+
 
 ### User Story
 
@@ -87,15 +148,19 @@ De maneira que estas informações alimentem meu sistema pessoal
         E nada deve ser alterado na base de dados
 ```
 
-### Considerações
 
-* Executaremos algumas análises automáticas, como verificação de estilo (PSR12), PHPMD e Larastan para avaliá-lo. 
-* Avaliaremos tanto a cobertura como a qualidade dos testes
-* Um arquivo CSV pode ter 2 ou 2.000.000 de linhas. Seria interessante não processá-lo na requisição HTTP da API `#FIKDIK`  
-* Também estamos de olho no uso de boas práticas.
+---
 
-### Inclua seu nome e um email para contato na mensagem do Merge Request para que possamos entrar em contato.
+### Considerações Finais
 
-### Aguardamos seu Merge Request
+* O projeto está pronto para rodar com PHP 8.4 e Laravel 12
+* Todos os testes automatizados estão passando
+* Utilize boas práticas de desenvolvimento, commit e testes
+* Um arquivo CSV pode ter 2 ou 2.000.000 de linhas. Considere processar arquivos grandes fora da requisição HTTP da API (`#FIKDIK`)
+* O código será avaliado por estilo (PSR12), PHPMD, Larastan, cobertura e qualidade dos testes
+
+Inclua seu nome e email para contato na mensagem do Merge Request para que possamos entrar em contato.
+
+---
 
 Convenia :purple_heart:
