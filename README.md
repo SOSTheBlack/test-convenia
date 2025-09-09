@@ -40,11 +40,11 @@ php artisan key:generate
 # Execute as migrações
 php artisan migrate
 
-# Gere as chaves do Passport
-php artisan passport:keys
-
 # Instale o Passport (cria clientes OAuth)
-php artisan passport:install
+php artisan passport:install --force
+
+# Cria usuários de teste, e gera token.
+php artisan db:seed
 
 # Execute os testes
 php vendor/bin/phpunit
