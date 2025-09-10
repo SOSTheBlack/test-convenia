@@ -25,8 +25,11 @@ class DatabaseSeeder extends Seeder
         } finally {
             echo "Usuário criado:\n";
             echo "Email: {$user->email}\n";
-            echo "Use este token para autenticação Bearer:\n";
-            echo $user->createToken('laravel')->accessToken . "\n";
+
+            if (!app()->environment('testing')) {
+                echo "Use este token para autenticação Bearer:\n";
+                echo $user->createToken('laravel')->accessToken . "\n";
+            }
         }
     }
 }
