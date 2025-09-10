@@ -22,18 +22,22 @@ chmod -R 777 /var/www/html/storage || true
 chmod -R 777 /var/www/html/bootstrap/cache || true
 chmod -R 775 /var/www/html/database || true
 
-# Se for root, definir o proprietário corretamente com base em variáveis de ambiente
+# Se for root, aplicar permissões para que www-data possa escrever, mas o usuário host também
 if [ "$(id -u)" = "0" ]; then
-  # Verificar se UID e GID foram passados como variáveis de ambiente
-  if [ ! -z "${UID}" ] && [ ! -z "${GID}" ]; then
-    # Usar UID e GID do host para compatibilidade com o VSCode
-    chown -R ${UID}:${GID} /var/www/html || true
-  else
-    # Fallback para www-data se não houver UID/GID definidos
-    chown -R www-data:www-data /var/www/html/storage || true
-    chown -R www-data:www-data /var/www/html/bootstrap/cache || true
-    chown -R www-data:www-data /var/www/html/database || true
-  fi
+  # Obter UID e GID do host a partir das variáveis de ambiente ou do arquivo
+  HOST_UID=${HOST_UID:-1000}
+  HOST_GID=${HOST_GID:-1000}
+  
+  # Configurar permissões para ambiente de desenvolvimento
+  echo "Ajustando permissões como root (UID: $HOST_UID, GID: $HOST_GID)..."
+  
+  # Define www-data como proprietário dos diretórios essenciais
+  chown -R www-data:www-data /var/www/html/storage || true
+  chown -R www-data:www-data /var/www/html/bootstrap/cache || true
+  chown -R www-data:www-data /var/www/html/database || true
+  
+  # Garante que o usuário host possa ler/escrever em todos os arquivos
+  chmod -R 775 /var/www/html || true
 fi
 
 # Limpar cache por precaução
