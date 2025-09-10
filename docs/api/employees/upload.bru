@@ -1,0 +1,24 @@
+meta {
+  name: upload
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base-url}}{{prefix-api}}/employees
+  body: multipartForm
+  auth: inherit
+}
+
+headers {
+  Content-Type: multipart/form-data
+  Accept: text/csv
+}
+
+body:multipart-form {
+  employees: @file(\\wsl.localhost\Ubuntu\home\garcia\code\convenia\laravel-engineer\tests\Stubs\employees.csv) @contentType(multipart/form-data)
+}
+
+settings {
+  encodeUrl: true
+}

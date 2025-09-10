@@ -7,12 +7,6 @@ use Illuminate\Http\JsonResponse;
 
 class EmployeeController extends Controller
 {
-    public function get(): JsonResponse
-    {
-        return response()->json(
-            Employee::where('user_id', auth()->user()->id)->get()
-        );
-    }
 
     public function show(Employee $employee): JsonResponse
     {
