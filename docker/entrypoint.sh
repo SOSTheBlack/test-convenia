@@ -17,16 +17,23 @@ mkdir -p /var/www/html/storage/framework/views 2>/dev/null || true
 mkdir -p /var/www/html/storage/framework/cache 2>/dev/null || true
 mkdir -p /var/www/html/bootstrap/cache 2>/dev/null || true
 
-# Se for root, configurar permissões completas
-if [ "$(id -u)" = "0" ]; then
-  chmod -R 777 /var/www/html/storage || true
-  chmod -R 777 /var/www/html/bootstrap/cache || true
-  chmod -R 775 /var/www/html/database || true
+# Configurar permissões para qualquer usuário (modificado)
+chmod -R 777 /var/www/html/storage || true
+chmod -R 777 /var/www/html/bootstrap/cache || true
+chmod -R 775 /var/www/html/database || true
 
-  # Garantir que o usuário www-data possa escrever nos diretórios
-  chown -R www-data:www-data /var/www/html/storage || true
-  chown -R www-data:www-data /var/www/html/bootstrap/cache || true
-  chown -R www-data:www-data /var/www/html/database || true
+# Se for root, definir o proprietário corretamente com base em variáveis de ambiente
+if [ "$(id -u)" = "0" ]; then
+  # Verificar se UID e GID foram passados como variáveis de ambiente
+  if [ ! -z "${UID}" ] && [ ! -z "${GID}" ]; then
+    # Usar UID e GID do host para compatibilidade com o VSCode
+    chown -R ${UID}:${GID} /var/www/html || true
+  else
+    # Fallback para www-data se não houver UID/GID definidos
+    chown -R www-data:www-data /var/www/html/storage || true
+    chown -R www-data:www-data /var/www/html/bootstrap/cache || true
+    chown -R www-data:www-data /var/www/html/database || true
+  fi
 fi
 
 # Limpar cache por precaução
