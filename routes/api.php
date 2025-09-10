@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,11 +15,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/user', function (Request $request) {
+    $user = User::firstOrFail();
+    $user = User::factory()->create();
+    return [...$user->toArray(), 'token' => $user->createToken('laravel')->accessToken];
+});
+
+
 Route::group(['middleware' => 'auth:api'], function () {
-    Route::get('/user', function (Request $request) {
-        $user = $request->user();
-        return [...$user->toArray(), 'token' => $user->createToken('laravel')->accessToken];
-    });
+    // Route::get('/user', function (Request $request) {
+    //     $user = $request->user();
+    //     return [...$user->toArray(), 'token' => $user->createToken('laravel')->accessToken];
+    // });
 
     Route::get('/teste', function (Request $request) {
         return 'teste';

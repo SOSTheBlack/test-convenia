@@ -8,10 +8,17 @@ setup_directories() {
     mkdir -p /var/www/html/storage/framework/cache
     mkdir -p /var/www/html/bootstrap/cache
     mkdir -p /var/log/supervisor
+    mkdir -p /var/www/html/database
+
+    # Garantir permissões para o banco de dados SQLite
+    touch /var/www/html/database/database.sqlite
+    chown -R www-data:www-data /var/www/html/database
+    chmod -R 777 /var/www/html/database
+    chmod 777 /var/www/html/database/database.sqlite
 
     # Definir permissões para diretórios que precisam de escrita
-    chown -R www-data:devgroup /var/www/html/storage
-    chown -R www-data:devgroup /var/www/html/bootstrap/cache
+    chown -R www-data:www-data /var/www/html/storage
+    chown -R www-data:www-data /var/www/html/bootstrap/cache
 
     # Garantir permissões para logs do supervisor
     touch /var/log/supervisor/supervisord.log
@@ -26,9 +33,6 @@ setup_directories() {
     chmod +x /var/www/html/artisan
     find /var/www/html/docker/scripts -type f -name "*.sh" -exec chmod +x {} \;
 }
-
-# Configurar diretório Git como seguro
-git config --global --add safe.directory /var/www/html
 
 # Configurar diretório Git como seguro
 git config --global --add safe.directory /var/www/html

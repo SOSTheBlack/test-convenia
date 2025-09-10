@@ -18,6 +18,8 @@ services:
     volumes:
       - ./:/var/www/html:cached
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      # Garantir que o banco de dados tenha permissões corretas
+      - ./database/database.sqlite:/var/www/html/database/database.sqlite:delegated
     networks:
       - laravel-network
     environment:
@@ -49,6 +51,8 @@ services:
     user: root
     volumes:
       - ./:/var/www/html:cached
+      # Garantir que o banco de dados tenha permissões corretas
+      - ./database/database.sqlite:/var/www/html/database/database.sqlite:delegated
     networks:
       - laravel-network
     environment:
