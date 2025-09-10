@@ -3,16 +3,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
     image: laravel-engineer:latest
     container_name: laravel-engineer-app
     restart: unless-stopped
     tty: true
     working_dir: /var/www/html
-    # user: "${UID:-1000}:${GID:-1000}"  # Comentado para permitir supervisor rodar como root
+    # Executando como root para evitar problemas com supervisord
+    user: root
     ports:
       - "80:80"
     volumes:
-      - ./:/var/www/html:delegated
+      - ./:/var/www/html:cached
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - laravel-network
@@ -24,6 +28,8 @@ services:
       - CACHE_DRIVER=file
       - SESSION_DRIVER=file
       - QUEUE_CONNECTION=database
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
     depends_on:
       - redis
 
@@ -32,13 +38,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
     container_name: laravel-engineer-worker
     restart: unless-stopped
     tty: true
     working_dir: /var/www/html
-    # user: "${UID:-1000}:${GID:-1000}"  # Comentado para permitir supervisor rodar como root
+    # Executando como root para evitar problemas de permissão
+    user: root
     volumes:
-      - ./:/var/www/html:delegated
+      - ./:/var/www/html:cached
     networks:
       - laravel-network
     environment:
@@ -49,6 +59,8 @@ services:
       - CACHE_DRIVER=file
       - SESSION_DRIVER=file
       - QUEUE_CONNECTION=database
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
     command: php artisan queue:work --verbose --tries=3 --timeout=90
     depends_on:
       - app

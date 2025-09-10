@@ -6,6 +6,9 @@
 SCRIPT_DIR="docker/scripts"
 
 case "$1" in
+    start)
+        $SCRIPT_DIR/start-dev-environment.sh
+        ;;
     setup)
         $SCRIPT_DIR/docker-setup.sh
         ;;
@@ -22,9 +25,10 @@ case "$1" in
         $SCRIPT_DIR/fix-permissions.sh
         ;;
     *)
-        echo "Uso: $0 {setup|test|restart|fix-git|fix-permissions}"
+        echo "Uso: $0 {start|setup|test|restart|fix-git|fix-permissions}"
         echo ""
         echo "Comandos disponíveis:"
+        echo "  start           - Inicia o ambiente de desenvolvimento com permissões corretas (RECOMENDADO)"
         echo "  setup           - Configuração inicial completa do ambiente Docker"
         echo "  test            - Executa os testes no ambiente Docker"
         echo "  restart         - Reinicia completamente os containers Docker"
