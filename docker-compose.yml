@@ -18,6 +18,7 @@ services:
     volumes:
       - ./:/var/www/html:cached
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./docker/php/permissions.ini:/usr/local/etc/php/conf.d/permissions.ini
       # Garantir que o banco de dados tenha permissões corretas
       - ./database/database.sqlite:/var/www/html/database/database.sqlite:delegated
     networks:
@@ -51,6 +52,7 @@ services:
     user: root
     volumes:
       - ./:/var/www/html:cached
+      - ./docker/php/permissions.ini:/usr/local/etc/php/conf.d/permissions.ini
       # Garantir que o banco de dados tenha permissões corretas
       - ./database/database.sqlite:/var/www/html/database/database.sqlite:delegated
     networks:
