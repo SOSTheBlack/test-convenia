@@ -48,9 +48,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 # Copy application files
 COPY . /var/www/html
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
+# Set proper permissions - modificado para permitir edição local
+RUN chmod -R 775 /var/www/html \
     && chmod -R 777 /var/www/html/storage \
     && chmod -R 777 /var/www/html/bootstrap/cache
 
