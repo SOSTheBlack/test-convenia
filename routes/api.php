@@ -40,6 +40,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'destroy'])
         ->name('employees.destroy');
 
-    // Route::post('/employees', \App\Http\Controllers\Employees\UploadEmployeeController::class)
-    //     ->name('employees.upload');
+    Route::post('/employees', \App\Http\Controllers\Employees\UploadEmployeesController::class)
+        ->name('employees.upload');
 });

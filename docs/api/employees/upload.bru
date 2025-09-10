@@ -4,10 +4,23 @@ meta {
   seq: 4
 }
 
-get {
+post {
   url: {{base-url}}{{prefix-api}}/employees
-  body: none
+  body: multipartForm
   auth: inherit
+}
+
+headers {
+  Content-Type: multipart/form-data
+  Accept: text/csv
+}
+
+body:multipart-form {
+  employess: @file(\\wsl$\Ubuntu\home\garcia\code\convenia\laravel-engineer\tests\Stubs\employees.csv) @contentType(multipart/form-data)
+}
+
+body:file {
+  file: @file(\\wsl$\Ubuntu\home\garcia\code\convenia\laravel-engineer\tests\Stubs\employees.csv) @contentType(text/csv; charset=utf-8)
 }
 
 settings {

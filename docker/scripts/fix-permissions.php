@@ -134,5 +134,3 @@ class FilePermissionWrapper {
         return false;
     }
 }
-
-echo "Configuração de permissão automática aplicada com sucesso!\n";

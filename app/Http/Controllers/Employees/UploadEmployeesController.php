@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class UploadEmployeeController extends Controller
+class UploadEmployeesController extends Controller
 {
     /**
      * Upload de funcionários
@@ -17,19 +18,7 @@ class UploadEmployeeController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'position' => 'required|string|max:100',
-            'salary' => 'required|numeric',
-        ]);
-
-        $employee = Employee::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'position' => $request->position,
-            'salary' => $request->salary,
-        ]);
+        dd($request->all(), $request->file('employees'), $request);
 
         return response()->json([
             'message' => 'Funcionário cadastrado com sucesso',
@@ -37,3 +26,5 @@ class UploadEmployeeController extends Controller
         ], Response::HTTP_CREATED);
     }
 }
+
+
