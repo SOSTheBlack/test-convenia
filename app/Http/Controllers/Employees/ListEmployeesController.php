@@ -17,7 +17,7 @@ class ListEmployeesController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $employees = Employee::paginate(10);
+        $employees = Employee::where('user_id', $request->user()->id)->paginate(10);
 
         return response()->json($employees, Response::HTTP_OK);
     }
