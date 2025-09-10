@@ -102,9 +102,12 @@ fi
 
 # Garantir que os diretórios de escrita tenham permissões adequadas
 echo "🔒 Ajustando permissões dos diretórios de escrita..."
-docker-compose exec app chmod -R 777 /var/www/html/storage
-docker-compose exec app chmod -R 777 /var/www/html/bootstrap/cache
-docker-compose exec app chmod -R 777 /var/www/html/database
+docker-compose exec app find /var/www/html/storage -type d -exec chmod 775 {} \;
+docker-compose exec app find /var/www/html/storage -type f -exec chmod 664 {} \;
+docker-compose exec app find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \;
+docker-compose exec app find /var/www/html/bootstrap/cache -type f -exec chmod 664 {} \;
+docker-compose exec app find /var/www/html/database -type d -exec chmod 775 {} \;
+docker-compose exec app find /var/www/html/database -type f -exec chmod 664 {} \;
 
 # Garantir permissões de execução para scripts importantes
 echo "🔑 Garantindo permissões de execução para scripts importantes..."
