@@ -3,44 +3,47 @@
 namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
-use App\Imports\EmployeesImport;
-use App\Models\Employee;
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\EmployeeImportRequest;
+use App\Jobs\ProcessEmployeeCsvFile;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UploadEmployeesController extends Controller
 {
     /**
      * Upload de funcionários
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  EmployeeImportRequest  $request
+     * @return JsonResponse
      */
-    public function __invoke(Request $request)
+    public function __invoke(EmployeeImportRequest $request): JsonResponse
     {
-        $file = $request->file('employees');
-
-        if (!$file) {
-            return response()->json([
-                'message' => 'Arquivo não encontrado'
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
         try {
-            Excel::import(new EmployeesImport, $file, null, \Maatwebsite\Excel\Excel::CSV);
-
+            $file = $request->file('employees');
+            $user = $request->user();
+            
+            // Generate unique job ID
+            $jobId = Str::uuid()->toString();
+            
+            // Store file temporarily with unique name
+            $fileName = 'temp_csv_' . $jobId . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('temp', $fileName);
+            
+            // Dispatch job for asynchronous processing
+            ProcessEmployeeCsvFile::dispatch($filePath, $user->id, $jobId);
+            
             return response()->json([
-                'message' => 'Funcionários importados com sucesso'
-            ], Response::HTTP_CREATED);
+                'message' => 'Arquivo enviado com sucesso e será processado em breve',
+                'job_id' => $jobId
+            ], Response::HTTP_ACCEPTED);
+            
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Erro ao importar funcionários',
+                'message' => 'Erro ao processar arquivo',
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
-
-
