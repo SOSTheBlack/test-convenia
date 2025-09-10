@@ -61,13 +61,15 @@ RUN useradd -u $USER_ID -g $GROUP_ID -m -s /bin/bash -G www-data,sudo devuser \
 # Copy application files
 COPY --chown=devuser:devgroup . /var/www/html
 
-# Set proper permissions
+# Set proper permissions - garantindo que qualquer arquivo criado no projeto seja acessível ao usuário host
 RUN find /var/www/html -type d -exec chmod 777 {} \; \
     && find /var/www/html -type f -exec chmod 666 {} \; \
     && chmod -R 777 /var/www/html/storage \
     && chmod -R 777 /var/www/html/bootstrap/cache \
     && chmod +x /var/www/html/artisan \
-    && find /var/www/html/docker/scripts -type f -name "*.sh" -exec chmod +x {} \;
+    && find /var/www/html/docker/scripts -type f -name "*.sh" -exec chmod +x {} \; \
+    && mkdir -p /etc/php/conf.d \
+    && echo "umask 0000" >> /etc/bash.bashrc
 
 # Create SQLite database directory and supervisor logs directory
 RUN mkdir -p /var/www/html/database \
