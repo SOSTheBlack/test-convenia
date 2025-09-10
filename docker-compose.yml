@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     tty: true
     working_dir: /var/www/html
-    user: "${UID:-1000}:${GID:-1000}"  # Descomentado para usar o uid/gid do host
+    # user: "${UID:-1000}:${GID:-1000}"  # Comentado para permitir supervisor rodar como root
     ports:
       - "80:80"
     volumes:
@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
     tty: true
     working_dir: /var/www/html
-    user: "${UID:-1000}:${GID:-1000}"  # Descomentado para usar o uid/gid do host
+    # user: "${UID:-1000}:${GID:-1000}"  # Comentado para permitir supervisor rodar como root
     volumes:
       - ./:/var/www/html:delegated
     networks:
