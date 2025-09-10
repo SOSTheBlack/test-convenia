@@ -72,3 +72,18 @@ fix-git: ## Corrige problema de propriedade do Git no container
 
 fix-permissions: ## Corrige permissões dos diretórios de storage do Laravel
 	$(DOCKER_SCRIPTS)/fix-permissions.sh
+
+fix-all: ## Corrige permissões de todos os arquivos do projeto
+	$(DOCKER_SCRIPTS)/fix-permissions.sh --full
+
+fix-server: ## Configura permissões para ambiente de produção (www-data)
+	$(DOCKER_SCRIPTS)/fix-permissions.sh --server
+
+fix: ## Exibe ajuda sobre comandos de permissão
+	@echo "Comandos de permissão disponíveis:"
+	@echo "  make fix-permissions  - Corrige permissões dos diretórios de escrita"
+	@echo "  make fix-all         - Corrige permissões de todos os arquivos"
+	@echo "  make fix-server      - Configura permissões para ambiente de produção"
+	@echo "  make fix-git         - Corrige problema de propriedade do Git"
+	@echo ""
+	@echo "Para opções avançadas: ./docker-run fix-permissions --help"
