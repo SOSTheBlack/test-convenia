@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     $user = User::firstOrFail();
-    $user = User::factory()->create();
     return [...$user->toArray(), 'token' => $user->createToken('laravel')->accessToken];
 });
 
@@ -32,7 +31,7 @@ Route::group(['middleware' => 'auth:api'], function () {
         return 'teste';
     })->name('teste');
 
-    Route::get('/employees', [\App\Http\Controllers\EmployeeController::class, 'get'])
+    Route::get('/employees', \App\Http\Controllers\Employees\ListEmployeesController::class)
         ->name('employees.get');
 
     Route::get('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'show'])
@@ -40,4 +39,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::delete('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'destroy'])
         ->name('employees.destroy');
+
+    Route::post('/employees', \App\Http\Controllers\Employees\UploadEmployeesController::class)
+        ->name('employees.upload');
 });
