@@ -32,8 +32,8 @@ class EmployeeControllerTest extends TestCase
 
         $this->get(route('employees.get'))
             ->assertOk()
-            ->assertJson(
-                $employees->map(function ($employee) {
+            ->assertJson([
+                'data' => $employees->map(function ($employee) {
                     return [
                         'id' => $employee->id,
                         'user_id' => $employee->user_id,
@@ -45,7 +45,7 @@ class EmployeeControllerTest extends TestCase
                         'start_date' => $employee->start_date,
                     ];
                 })->toArray()
-            );
+            ]);
     }
 
     public function test_it_cannot_gets_employees_from_another_user()
@@ -58,7 +58,7 @@ class EmployeeControllerTest extends TestCase
 
         $this->get(route('employees.get'))
             ->assertOk()
-            ->assertExactJson([]);
+            ->assertJson(['data' => []]);
     }
 
     public function test_it_shows_a_employee_with_a_auth_user()
