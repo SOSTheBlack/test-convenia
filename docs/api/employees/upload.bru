@@ -16,11 +16,7 @@ headers {
 }
 
 body:multipart-form {
-  employess: @file(\\wsl$\Ubuntu\home\garcia\code\convenia\laravel-engineer\tests\Stubs\employees.csv) @contentType(multipart/form-data)
-}
-
-body:file {
-  file: @file(\\wsl$\Ubuntu\home\garcia\code\convenia\laravel-engineer\tests\Stubs\employees.csv) @contentType(text/csv; charset=utf-8)
+  employees: @file(\\wsl.localhost\Ubuntu\home\garcia\code\convenia\laravel-engineer\tests\Stubs\employees.csv) @contentType(multipart/form-data)
 }
 
 settings {
