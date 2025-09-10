@@ -21,7 +21,9 @@ class EmployeeUpdateNotification extends Mailable
 
     public function build()
     {
-        return $this->subject('Funcionário Atualizado - ' . $this->employee->name)
+        $subject = 'Funcionário Atualizado - ' . $this->employee->name;
+        
+        return $this->subject($subject)
                     ->view('emails.employee-update')
                     ->with([
                         'employee' => $this->employee,

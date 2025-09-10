@@ -32,9 +32,16 @@ class CsvImportService
 
             // Read and validate header
             $header = fgetcsv($handle);
+            
+            if ($header === false) {
+                fclose($handle);
+                throw new \Exception('Unable to read CSV header or file is empty');
+            }
+            
             $expectedColumns = ['name', 'email', 'document', 'city', 'state', 'start_date'];
             
             if (!$this->validateHeader($header, $expectedColumns)) {
+                fclose($handle);
                 throw new \Exception('Invalid CSV header. Expected columns: ' . implode(', ', $expectedColumns));
             }
 
