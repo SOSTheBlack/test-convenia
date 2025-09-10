@@ -67,21 +67,6 @@ restart: down up ## Reinicia os containers
 rebuild: ## Reconstruir e reiniciar completamente os containers
 	$(DOCKER_SCRIPTS)/restart-docker.sh
 
-fix-git: ## Corrige problema de propriedade do Git no container
-	$(DOCKER_SCRIPTS)/fix-git-ownership.sh
-
-fix-permissions: ## Corrige permissões dos diretórios de storage do Laravel
-	$(DOCKER_SCRIPTS)/fix-permissions.sh
-
-fix-all: ## Corrige permissões de todos os arquivos do projeto
-	$(DOCKER_SCRIPTS)/fix-permissions.sh --full
-
-fix-server: ## Configura permissões para ambiente de produção (www-data)
-	$(DOCKER_SCRIPTS)/fix-permissions.sh --server
-
-fix-vscode: ## Corrige permissões especificamente para desenvolvimento no VSCode
-	$(DOCKER_SCRIPTS)/fix-vscode-permissions.sh
-
 fix: ## Exibe ajuda sobre comandos de permissão
 	@echo "Comandos de permissão disponíveis:"
 	@echo "  make fix-permissions  - Corrige permissões dos diretórios de escrita"

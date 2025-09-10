@@ -2,7 +2,19 @@
 
 # Script de setup do ambiente Docker para Laravel
 
-echo "🚀 Configurando o ambiente Laravel com Docker..."
+echo "🚀 Configurando o ambiente Laravel com Docker v1..."
+
+# Verificar se o Docker está instalado
+if ! command -v docker >/dev/null 2>&1 || ! command -v docker-compose >/dev/null 2>&1; then
+    echo "❌ Docker e/ou docker-compose não estão instalados. Por favor, instale-os primeiro."
+    exit 1
+fi
+
+# Verificar se o .env.docker existe
+if [ ! -f .env.docker ]; then
+    echo "❌ Arquivo .env.docker não encontrado."
+    exit 1
+fi
 
 # Copiar arquivo .env
 if [ ! -f .env ]; then
@@ -10,17 +22,44 @@ if [ ! -f .env ]; then
     cp .env.docker .env
 fi
 
-# Build dos containers
-echo "🔨 Construindo os containers Docker..."
-docker-compose build --no-cache
+# Obter IDs do usuário atual
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+echo "🔍 Usando UID:GID do usuário atual: $USER_ID:$GROUP_ID"
 
-# Subir os containers
-echo "▶️ Iniciando os containers..."
-docker-compose up -d
+# Atualizar .env.docker com os IDs do usuário atual
+sed -i "s/USER_ID=.*/USER_ID=$USER_ID/" .env.docker
+sed -i "s/GROUP_ID=.*/GROUP_ID=$GROUP_ID/" .env.docker
+echo "✅ Variáveis USER_ID e GROUP_ID atualizadas no .env.docker"
 
-# Aguardar containers ficarem prontos
-echo "⏳ Aguardando containers ficarem prontos..."
-sleep 10
+# Verificar se precisamos reconstruir os containers
+echo "🔄 Verificando se os containers precisam ser reconstruídos..."
+if docker-compose ps | grep -q "laravel-engineer"; then
+    echo "🧹 Removendo containers existentes para reconstrução limpa..."
+    docker-compose down
+fi
+
+# Construir os containers
+echo "🏗️  Construindo containers Docker com as permissões adequadas..."
+USER_ID=$USER_ID GROUP_ID=$GROUP_ID docker-compose build --no-cache
+
+# Iniciar os containers
+echo "🚀 Iniciando containers Docker..."
+USER_ID=$USER_ID GROUP_ID=$GROUP_ID docker-compose up -d
+
+# Verificar se os containers estão rodando
+if ! docker-compose ps | grep -q "Up"; then
+    echo "❌ Falha ao iniciar os containers. Verifique os logs com 'docker-compose logs'"
+    exit 1
+fi
+
+# Criar diretórios de cache se necessário e ajustar permissões
+echo "🔧 Configurando diretórios de cache e storage..."
+docker-compose exec app bash -c "
+    mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache
+    chown -R www-data:devgroup storage bootstrap/cache
+    chmod -R 775 storage bootstrap/cache
+"
 
 # Instalar dependências
 echo "📦 Instalando dependências do Composer..."
@@ -53,13 +92,6 @@ docker-compose exec app php artisan config:clear
 docker-compose exec app php artisan cache:clear
 docker-compose exec app php artisan route:clear
 docker-compose exec app php artisan view:clear
-
-# Definir permissões
-echo "🔧 Ajustando permissões..."
-docker-compose exec app chown -R www-data:www-data /var/www/html
-docker-compose exec app chmod -R 755 /var/www/html
-docker-compose exec app chmod -R 775 /var/www/html/storage
-docker-compose exec app chmod -R 775 /var/www/html/bootstrap/cache
 
 echo ""
 echo "✅ Setup concluído!"

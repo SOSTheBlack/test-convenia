@@ -1,61 +1,75 @@
-# Ajustes nas Permissões do Docker para Laravel (VSCode)
+# Solução Definitiva de Permissões do Docker para Laravel (VSCode)
 
 ## Problemas Originais
 
-1. **Permissões de Arquivos**: Todos os arquivos e diretórios no projeto Laravel estavam atribuídos ao usuário e grupo `www-data:www-data`, com permissões que não permitiam ao usuário local (`garcia`) editar os arquivos pelo VSCode.
+1. **Permissões de Arquivos**: Todos os arquivos e diretórios no projeto Laravel estavam atribuídos ao usuário e grupo `www-data:www-data`, com permissões que não permitiam ao usuário local editar os arquivos pelo VSCode.
 
-2. **Erro no Supervisor**: Ao tentar configurar o container para rodar com o usuário local (para resolver o problema #1), o supervisor apresentava o erro: "Can't drop privilege as nonroot user"
+2. **Erro de Permissões no Laravel**: Ao corrigir as permissões para o VSCode, o Laravel passa a apresentar erros como "Failed to open stream: Permission denied" ao tentar escrever em pastas como `storage/framework/views`.
 
-## Alterações Realizadas
+3. **Erro de Permissões em Scripts**: Muitos scripts do projeto (`docker-run setup`, `docker-run restart`, etc.) apresentavam erros de permissão.
 
-### 1. Permissões Imediatas
-- Corrigimos as permissões de todos os arquivos do projeto para o usuário local (`garcia:garcia`) usando `chown`
-- Isso permite a edição imediata dos arquivos pelo VSCode
+4. **Inconsistência de Permissões**: A necessidade constante de rodar scripts de correção (`fix-vscode-permissions.sh`, `fix-container-permissions.sh`) causava confusão e perda de tempo.
 
-### 2. Docker Compose
-- **Atualização**: Mantivemos o container rodando como `root` (comentando a opção `user`) para evitar o erro com o supervisor
-- Configuramos o entrypoint para garantir permissões adequadas mesmo com o container rodando como root
+## Nova Solução Implementada
 
-### 3. Dockerfile
-- Modificamos a configuração de permissões para não forçar o proprietário `www-data`, apenas ajustando as permissões dos arquivos
-- Definimos permissões mais abertas (775 para diretórios, 664 para arquivos) para permitir edição tanto pelo usuário local quanto pelo usuário web
+Nossa nova abordagem resolve o problema de forma definitiva, sem necessidade de scripts de correção após a primeira execução:
 
-### 4. Script de Entrypoint
-- Atualizamos o script para ajustar permissões independentemente de quem está executando o container
-- Garantimos que tanto o usuário local quanto o `www-data` possam acessar os arquivos necessários
+### 1. Criação de Usuário no Container com Mesmo UID/GID do Host
 
-### 5. Configuração do Supervisor
-- Ajustamos o arquivo `supervisord.conf` para funcionar corretamente em um ambiente onde o supervisor roda como root
-- Adicionamos a configuração `user=root` explícita para cada programa gerenciado pelo supervisor
+- Criamos um usuário `devuser` no container com o mesmo UID/GID do seu usuário no host (detectado automaticamente)
+- Este usuário pertence ao grupo `www-data` e tem permissões sudo
+- Todos os arquivos dentro do container pertencem a este usuário
 
-### 6. Novos Scripts Auxiliares
-- Criamos o script `fix-vscode-permissions.sh` para facilitar o ajuste de permissões no ambiente de desenvolvimento com VSCode
-- Criamos o script `fix-container-permissions.sh` para corrigir permissões dentro do container em execução
+### 2. Configuração Correta de Permissões
 
-### 7. Makefile
-- Adicionamos o comando `make fix-vscode` para facilitar o acesso ao novo script
+- Diretórios: `775` (rwxrwxr-x) - permitindo escrita pelo usuário, grupo e apenas leitura para outros
+- Arquivos: `664` (rw-rw-r--) - permitindo leitura/escrita pelo usuário e grupo, apenas leitura para outros
+- Diretórios críticos (`storage` e `bootstrap/cache`): configurados para serem proprietários de `www-data:devgroup`
 
-## Como Usar
+### 3. Docker Compose Atualizado
 
-Para corrigir permissões a qualquer momento, execute:
+- Todos os serviços usam o usuário `devuser` por padrão
+- UID/GID são passados como argumentos de build
+- Volumes configurados com opção `cached` para melhor performance
+
+### 4. Script de Inicialização Automático
+
+- Adicionamos o comando `./docker-run start` que configura tudo automaticamente:
+  - Detecta o UID/GID do usuário atual
+  - Atualiza `.env.docker` com esses valores
+  - Constrói e inicia os containers com as permissões corretas
+  - Configura todos os diretórios e permissões
+
+## Como Usar (NOVA FORMA RECOMENDADA)
+
+Para iniciar o ambiente com todas as permissões configuradas corretamente, use:
 
 ```bash
-# Para corrigir permissões para desenvolvimento com VSCode (executa no host)
-make fix-vscode
-
-# OU para corrigir permissões dentro do container em execução
-docker/scripts/fix-container-permissions.sh
+./docker-run start
 ```
 
-## Comportamento Esperado
+Este comando único:
+1. Detecta o UID/GID do seu usuário automaticamente
+2. Constrói os containers com esse UID/GID
+3. Inicia o ambiente Docker
+4. Configura todas as permissões necessárias
+5. Limpa os caches do Laravel
 
-1. Todos os arquivos do projeto agora devem ser editáveis pelo VSCode
-2. Os containers Docker devem iniciar sem erros de privilégios
-3. Os diretórios críticos do Laravel (storage, cache, etc.) continuarão com permissões adequadas para o funcionamento da aplicação
-4. O ambiente Docker continuará funcionando normalmente
+## Por Que Esta Solução Funciona
 
-## Observações de Segurança
+1. **Correspondência de Usuários**: O usuário `devuser` no container tem exatamente o mesmo UID/GID do seu usuário no host, eliminando problemas de propriedade de arquivos.
 
-- Esta configuração é adequada apenas para ambientes de desenvolvimento local
-- Para ambientes de produção, seria recomendado usar configurações de segurança mais rigorosas
-- O uso do usuário root no container de desenvolvimento é um compromisso para resolver o problema de permissões, mas não é recomendado para produção
+2. **Grupos Compartilhados**: Tanto `devuser` quanto `www-data` podem acessar e modificar os arquivos necessários através de permissões de grupo.
+
+3. **Permissões Adequadas**: As permissões são configuradas para permitir acesso de leitura/escrita aos usuários corretos, sem abrir demais a segurança.
+
+4. **Automatização Completa**: Todo o processo é automatizado, sem necessidade de intervenção manual após a configuração inicial.
+
+## Observações Importantes
+
+- Esta solução funciona para equipes de desenvolvimento, pois detecta automaticamente o UID/GID de cada desenvolvedor
+- O VSCode pode editar todos os arquivos normalmente
+- O Laravel pode escrever logs e arquivos de cache normalmente
+- Os comandos Git funcionam sem problemas
+- Scripts podem ser executados sem erros de permissão
+- Não há necessidade de rodar scripts adicionais de correção após a inicialização
