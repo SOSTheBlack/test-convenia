@@ -72,9 +72,9 @@ RUN find /var/www/html -type d -exec chmod 777 {} \; \
 # Create SQLite database directory and supervisor logs directory
 RUN mkdir -p /var/www/html/database \
     && touch /var/www/html/database/database.sqlite \
-    && chown -R devuser:devgroup /var/www/html/database \
-    && chmod 777 /var/www/html/database \
-    && chmod 666 /var/www/html/database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html/database \
+    && chmod -R 777 /var/www/html/database \
+    && chmod 777 /var/www/html/database/database.sqlite \
     && mkdir -p /var/log/supervisor \
     && touch /var/log/supervisor/supervisord.log \
     && chmod -R 777 /var/log/supervisor
