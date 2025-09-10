@@ -37,7 +37,7 @@ docker-compose exec app chmod 664 database/database.sqlite
 
 # Rodar migrations
 echo "🏗️ Executando migrations..."
-docker-compose exec app php artisan migrate
+docker-compose exec app php artisan migrate:fresh
 
 # Instalar Passport
 echo "🔐 Instalando Laravel Passport..."
