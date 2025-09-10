@@ -21,7 +21,7 @@ mkdir -p /var/www/html/bootstrap/cache 2>/dev/null || true
 if [ "$(id -u)" = "0" ]; then
   chmod -R 777 /var/www/html/storage || true
   chmod -R 777 /var/www/html/bootstrap/cache || true
-  chmod -R 777 /var/www/html/database || true
+  chmod -R 775 /var/www/html/database || true
 
   # Garantir que o usuário www-data possa escrever nos diretórios
   chown -R www-data:www-data /var/www/html/storage || true
