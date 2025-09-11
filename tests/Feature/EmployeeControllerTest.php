@@ -42,7 +42,7 @@ class EmployeeControllerTest extends TestCase
                         'document' => $employee->document,
                         'city' => $employee->city,
                         'state' => $employee->state,
-                        'start_date' => $employee->start_date,
+                        'start_date' => $employee->start_date->toISOString(),
                     ];
                 })->toArray()
             ]);
@@ -77,7 +77,7 @@ class EmployeeControllerTest extends TestCase
                 'document' => $employee->document,
                 'city' => $employee->city,
                 'state' => $employee->state,
-                'start_date' => $employee->start_date,
+                'start_date' => $employee->start_date->toISOString(),
             ]);
     }
 
