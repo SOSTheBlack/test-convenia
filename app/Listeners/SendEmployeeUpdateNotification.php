@@ -4,9 +4,11 @@ namespace App\Listeners;
 
 use App\Events\EmployeeUpdated;
 use App\Mail\EmployeeUpdateNotification;
+use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class SendEmployeeUpdateNotification implements ShouldQueue
 {
@@ -17,14 +19,13 @@ class SendEmployeeUpdateNotification implements ShouldQueue
         $employee = $event->employee;
         $user = $employee->user;
 
-        if ($user && $user->email) {
-            Mail::to($user->email)->send(
-                new EmployeeUpdateNotification(
-                    $employee,
-                    $user,
-                    $event->previousEmployee
-                )
-            );
-        }
+        // Enviar o e-mail de notificação
+        Mail::to($user->email)->send(
+            new EmployeeUpdateNotification(
+                $employee,
+                $user,
+                $event->previousEmployee
+            )
+        );
     }
 }

@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+
+use function Illuminate\Log\log;
 
 class EmployeeUpdateNotification extends Mailable
 {
@@ -22,8 +25,9 @@ class EmployeeUpdateNotification extends Mailable
     public function build()
     {
         $subject = 'Funcionário Atualizado - ' . $this->employee->name;
-        
+
         return $this->subject($subject)
+                    ->from($this->user->email, $this->user->name)
                     ->view('emails.employee-update')
                     ->with([
                         'employee' => $this->employee,
