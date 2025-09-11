@@ -36,41 +36,6 @@ services:
     depends_on:
       - redis
 
-  # Worker para processar jobs/queues
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        USER_ID: ${USER_ID:-1000}
-        GROUP_ID: ${GROUP_ID:-1000}
-    container_name: laravel-engineer-worker
-    restart: unless-stopped
-    tty: true
-    working_dir: /var/www/html
-    # Executando como root para evitar problemas de permissão
-    user: root
-    volumes:
-      - ./:/var/www/html:cached
-      - ./docker/php/permissions.ini:/usr/local/etc/php/conf.d/permissions.ini
-      # Garantir que o banco de dados tenha permissões corretas
-      - ./database/database.sqlite:/var/www/html/database/database.sqlite:delegated
-    networks:
-      - laravel-network
-    environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - DB_CONNECTION=sqlite
-      - DB_DATABASE=/var/www/html/database/database.sqlite
-      - CACHE_DRIVER=file
-      - SESSION_DRIVER=file
-      - QUEUE_CONNECTION=database
-      - USER_ID=${USER_ID:-1000}
-      - GROUP_ID=${GROUP_ID:-1000}
-    command: php artisan queue:work --verbose --tries=3 --timeout=90
-    depends_on:
-      - app
-
   # Redis para cache e sessões (opcional, mas recomendado)
   redis:
     image: redis:7-alpine

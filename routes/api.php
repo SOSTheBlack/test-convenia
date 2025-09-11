@@ -42,4 +42,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::post('/employees', \App\Http\Controllers\Employees\UploadEmployeesController::class)
         ->name('employees.upload');
+
+    Route::get('/import-status/{jobId}', \App\Http\Controllers\Employees\ImportStatusController::class)
+        ->name('import.status');
 });
