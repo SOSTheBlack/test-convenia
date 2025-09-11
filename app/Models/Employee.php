@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BrazilianState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,8 +42,9 @@ class Employee extends Model
      * @var array
      */
     protected $casts = [
-        'start_date' => 'date',
         'user_id' => 'integer',
+        'state' => BrazilianState::class,
+        'start_date' => 'date',
     ];
 
     /**
@@ -60,9 +62,9 @@ class Employee extends Model
     {
         $document = $this->document;
         if (strlen($document) === 11) {
-            return substr($document, 0, 3) . '.' . 
-                   substr($document, 3, 3) . '.' . 
-                   substr($document, 6, 3) . '-' . 
+            return substr($document, 0, 3) . '.' .
+                   substr($document, 3, 3) . '.' .
+                   substr($document, 6, 3) . '-' .
                    substr($document, 9, 2);
         }
         return $document;

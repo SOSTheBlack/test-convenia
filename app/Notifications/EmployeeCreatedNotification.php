@@ -36,7 +36,7 @@ class EmployeeUpdatedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $isNew = $this->previousEmployee === null;
-        $subject = vsprintf('Funcionário %s - %s', [$isNew ? 'Criado' : 'Atualizado', $this->employee->name]);
+        $subject = 'Funcionário Criado - ' . $this->employee->name;
 
         return (new MailMessage)
             ->subject($subject)
@@ -46,7 +46,6 @@ class EmployeeUpdatedNotification extends Notification implements ShouldQueue
                 [
                     'employee' => $this->employee,
                     'user' => $this->user,
-                    'previousEmployee' => $this->previousEmployee,
                     'isNew' => $isNew
                 ]
             );

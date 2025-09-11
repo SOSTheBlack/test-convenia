@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Employees;
+namespace App\Http\Controllers\API\Employees;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmployeeImportRequest;
+use App\Imports\EmployeesImport;
 use App\Jobs\ProcessEmployeeCsvFile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UploadEmployeesController extends Controller
 {
@@ -23,26 +25,23 @@ class UploadEmployeesController extends Controller
         try {
             $file = $request->file('employees');
             $user = $request->user();
-            
-            // Generate unique job ID
             $jobId = Str::uuid()->toString();
-            
-            // Store file temporarily with unique name
-            $fileName = 'temp_csv_' . $jobId . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('temp', $fileName);
-            
+
+            $fileName = 'temp_csv_employee_' . $jobId . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('temp',  $fileName);
+
             // Dispatch job for asynchronous processing
             ProcessEmployeeCsvFile::dispatch($filePath, $user->id, $jobId);
-            
+
             return response()->json([
                 'message' => 'Arquivo enviado com sucesso e será processado em breve',
                 'job_id' => $jobId
             ], Response::HTTP_ACCEPTED);
-            
-        } catch (\Exception $e) {
+
+        } catch (\Throwable $exception) {
             return response()->json([
                 'message' => 'Erro ao processar arquivo',
-                'error' => $e->getMessage()
+                'error' => $exception->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

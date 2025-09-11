@@ -3,18 +3,27 @@
 namespace App\Services;
 
 use App\DTO\EmployeeData;
+use App\Imports\EmployeesImport;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CsvImportService
 {
     public function __construct(
         private EmployeeService $employeeService
     ) {
+
     }
 
-    public function processCsvFile(UploadedFile $file, int $userId): array
+    public function processCsvFile(string $filePath, int $userId): void
+    {
+        Excel::import(new EmployeesImport($userId), Storage::path($filePath));
+    }
+
+    public function processCsvFile2(UploadedFile $file, int $userId): array
     {
         $results = [
             'total_records' => 0,
@@ -25,21 +34,21 @@ class CsvImportService
 
         try {
             $handle = fopen($file->getPathname(), 'r');
-            
+
             if ($handle === false) {
                 throw new \Exception('Unable to open CSV file');
             }
 
             // Read and validate header
             $header = fgetcsv($handle);
-            
+
             if ($header === false) {
                 fclose($handle);
                 throw new \Exception('Unable to read CSV header or file is empty');
             }
-            
+
             $expectedColumns = ['name', 'email', 'document', 'city', 'state', 'start_date'];
-            
+
             if (!$this->validateHeader($header, $expectedColumns)) {
                 fclose($handle);
                 throw new \Exception('Invalid CSV header. Expected columns: ' . implode(', ', $expectedColumns));
@@ -54,7 +63,7 @@ class CsvImportService
                 try {
                     $data = array_combine($header, $row);
                     $employeeData = EmployeeData::fromArray($data, $userId);
-                    
+
                     $validationErrors = $employeeData->validate();
                     if (!empty($validationErrors)) {
                         $results['failed_records']++;
@@ -74,7 +83,7 @@ class CsvImportService
                         'row' => $rowNumber,
                         'errors' => ['general' => $e->getMessage()]
                     ];
-                    
+
                     Log::error('Error processing CSV row', [
                         'row' => $rowNumber,
                         'error' => $e->getMessage(),
@@ -90,7 +99,7 @@ class CsvImportService
                 'error' => $e->getMessage(),
                 'user_id' => $userId
             ]);
-            
+
             throw $e;
         }
 

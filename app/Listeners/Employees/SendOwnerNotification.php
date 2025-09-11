@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Listeners\Employees;
 
 use App\Events\EmployeeUpdated;
-use App\Models\User;
 use App\Notifications\EmployeeUpdatedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class SendEmployeeUpdateNotification implements ShouldQueue
+class SendOwnerNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -18,16 +17,7 @@ class SendEmployeeUpdateNotification implements ShouldQueue
         $employee = $event->employee;
         $user = $employee->user;
 
-        if (!$user) {
-            // Se não houver usuário associado, tente encontrar o primeiro usuário do sistema
-            $user = User::first();
-
-            if (!$user) {
-                // Não há usuários no sistema, não podemos enviar a notificação
-                Log::warning('Não foi possível enviar notificação de funcionário atualizado: nenhum usuário encontrado');
-                return;
-            }
-        }
+        Log::info("Listener notifying user {$user->email} about employee {$employee->name}");
 
         // Enviar a notificação usando o sistema de notificações
         $user->notify(
