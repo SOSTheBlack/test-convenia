@@ -2,6 +2,8 @@
 
 namespace App\DTO;
 
+use Illuminate\Support\Carbon;
+
 class EmployeeData
 {
     public function __construct(
@@ -11,7 +13,9 @@ class EmployeeData
         public readonly string $city,
         public readonly string $state,
         public readonly string $start_date,
-        public readonly int $user_id
+        public readonly int $user_id,
+        public readonly ?Carbon $updated_at = null,
+        public readonly ?UserData $user = null
     ) {
     }
 
@@ -28,6 +32,21 @@ class EmployeeData
         );
     }
 
+    public static function fromModel(\App\Models\Employee $employee): self
+    {
+        return new self(
+            name: $employee->name,
+            email: $employee->email,
+            document: $employee->document,
+            city: $employee->city,
+            state: $employee->state->value,
+            start_date: $employee->start_date,
+            updated_at: $employee->updated_at,
+            user_id: $employee->user_id,
+            user: $employee->user ? UserData::fromModel($employee->user) : null
+        );
+    }
+
     public function toArray(): array
     {
         return [
@@ -38,7 +57,17 @@ class EmployeeData
             'state' => $this->state,
             'start_date' => $this->start_date,
             'user_id' => $this->user_id,
+            'user' => $this->user ? $this->user->toArray() : null
         ];
+    }
+
+    public function toModelArray(): array
+    {
+        $result = $this->toArray();
+
+        unset($result['user']);
+
+        return $result;
     }
 
     public function validate(): array
@@ -75,7 +104,7 @@ class EmployeeData
     private function isValidCpf(string $cpf): bool
     {
         $cpf = preg_replace('/[^0-9]/', '', $cpf);
-        
+
         if (strlen($cpf) !== 11 || preg_match('/(\d)\1{10}/', $cpf)) {
             return false;
         }

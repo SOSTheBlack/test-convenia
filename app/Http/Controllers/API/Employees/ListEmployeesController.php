@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\API\Employees;
 
 use App\Http\Controllers\Controller;
-use App\Services\EmployeeService;
+use App\Services\Employees\EmployeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class ListEmployeesController extends Controller
+final class ListEmployeesController extends Controller
 {
     public function __construct(
         private EmployeeService $employeeService

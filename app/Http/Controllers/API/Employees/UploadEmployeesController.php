@@ -4,16 +4,20 @@ namespace App\Http\Controllers\API\Employees;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmployeeImportRequest;
-use App\Imports\EmployeesImport;
-use App\Jobs\ProcessEmployeeCsvFile;
+use App\Services\Employees\EmployeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
-class UploadEmployeesController extends Controller
+use function Illuminate\Log\log;
+
+final class UploadEmployeesController extends Controller
 {
+    public function __construct(private EmployeeService $employeeService)
+    {
+
+    }
+
     /**
      * Upload de funcionários
      *
@@ -23,22 +27,16 @@ class UploadEmployeesController extends Controller
     public function __invoke(EmployeeImportRequest $request): JsonResponse
     {
         try {
-            $file = $request->file('employees');
-            $user = $request->user();
-            $jobId = Str::uuid()->toString();
+            $filePath = $this->employeeService->importFile()->uploadFromRequest($request);
+            $this->employeeService->importFile()->dispatchJob($filePath, $request->user()->id);
 
-            $fileName = 'temp_csv_employee_' . $jobId . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('temp',  $fileName);
+            log()->info('File uploaded and job dispatched', [
+                'user_id' => $request->user()->id,
+                'file_path' => $filePath
+            ]);
 
-            // Dispatch job for asynchronous processing
-            ProcessEmployeeCsvFile::dispatch($filePath, $user->id, $jobId);
-
-            return response()->json([
-                'message' => 'Arquivo enviado com sucesso e será processado em breve',
-                'job_id' => $jobId
-            ], Response::HTTP_ACCEPTED);
-
-        } catch (\Throwable $exception) {
+            return response()->json(['message' => 'Arquivo enviado com sucesso e será processado em breve'], Response::HTTP_OK);
+        } catch (Throwable $exception) {
             return response()->json([
                 'message' => 'Erro ao processar arquivo',
                 'error' => $exception->getMessage()
