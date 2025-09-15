@@ -28,24 +28,6 @@ class EmployeesImport implements ToCollection, WithHeadingRow, WithChunkReading,
         $this->employeeService = app(EmployeeService::class);
     }
 
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
-    public function model(array $row)
-    {
-        return new Employee([
-            'user_id' => $this->userId, // Usando ID fixo 1 para simplificar
-            'name' => $row['name'],
-            'email' => $row['email'],
-            'document' => $row['document'],
-            'city' => $row['city'],
-            'state' => BrazilianState::from($row['state']),
-            'start_date' => Carbon::parse($row['start_date'])->format('Y-m-d'),
-        ]);
-    }
-
     public function collection(Collection $rows)
     {
         // Mapeia os dados brutos do CSV para objetos EmployeeData
@@ -122,10 +104,10 @@ class EmployeesImport implements ToCollection, WithHeadingRow, WithChunkReading,
         return [
             'name' => ['required', 'string', 'min:2'],
             'email' => ['required', 'email'],
-            'document' => ['required', 'string'],
+            'document' => ['required', 'numeric'],
             'city' => ['required', 'string'],
             'state' => ['required', 'string', 'size:2'],
-            'start_date' => ['required', 'date_format:d/m/Y'],
+            'start_date' => ['required', new \App\Rules\ValidDate('Y-m-d')],
         ];
     }
 
