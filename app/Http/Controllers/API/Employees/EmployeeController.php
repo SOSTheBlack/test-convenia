@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\API\Employees;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\Auth\ApiController;
 use App\Models\Employee;
 use Illuminate\Http\JsonResponse;
 
-class EmployeeController extends Controller
+class EmployeeController extends ApiController
 {
 
     public function show(Employee $employee): JsonResponse
