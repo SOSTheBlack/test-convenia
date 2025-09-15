@@ -2,6 +2,8 @@
 
 namespace App\DTO;
 
+use Illuminate\Support\Carbon;
+
 class EmployeeData
 {
     public function __construct(
@@ -11,7 +13,10 @@ class EmployeeData
         public readonly string $city,
         public readonly string $state,
         public readonly string $start_date,
-        public readonly int $user_id
+        public readonly int $user_id,
+        public readonly ?Carbon $updated_at = null,
+        public readonly ?UserData $user = null,
+        public ?bool $send_notification = false,
     ) {
     }
 
@@ -24,7 +29,24 @@ class EmployeeData
             city: trim($data['city'] ?? ''),
             state: trim($data['state'] ?? ''),
             start_date: $data['start_date'] ?? '',
-            user_id: $userId
+            user_id: $userId,
+            send_notification: $data['send_notification'] ?? false
+        );
+    }
+
+    public static function fromModel(\App\Models\Employee $employee): self
+    {
+        return new self(
+            name: $employee->name,
+            email: $employee->email,
+            document: $employee->document,
+            city: $employee->city,
+            state: $employee->state->value,
+            start_date: $employee->start_date,
+            updated_at: $employee->updated_at,
+            user_id: $employee->user_id,
+            send_notification: $employee->send_notification,
+            user: $employee->user ? UserData::fromModel($employee->user) : null
         );
     }
 
@@ -38,70 +60,24 @@ class EmployeeData
             'state' => $this->state,
             'start_date' => $this->start_date,
             'user_id' => $this->user_id,
+            'send_notification' => $this->send_notification,
+            'user' => $this->user ? $this->user->toArray() : null
         ];
     }
 
-    public function validate(): array
+    public function setSendNotification(bool $send): self
     {
-        $errors = [];
+        $this->send_notification = $send;
 
-        if (empty($this->name) || strlen($this->name) < 2) {
-            $errors['name'] = 'O nome é obrigatório e deve ter pelo menos 2 caracteres.';
-        }
-
-        if (empty($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'O e-mail é obrigatório e deve ser válido.';
-        }
-
-        if (empty($this->document) || !$this->isValidCpf($this->document)) {
-            $errors['document'] = 'O documento (CPF) é obrigatório e deve ser válido.';
-        }
-
-        if (empty($this->city)) {
-            $errors['city'] = 'A cidade é obrigatória.';
-        }
-
-        if (empty($this->state) || strlen($this->state) !== 2) {
-            $errors['state'] = 'O estado é obrigatório e deve ter 2 caracteres (ex: SP).';
-        }
-
-        if (empty($this->start_date) || !$this->isValidDate($this->start_date)) {
-            $errors['start_date'] = 'A data de início é obrigatória e deve estar no formato Y-m-d.';
-        }
-
-        return $errors;
+        return $this;
     }
 
-    private function isValidCpf(string $cpf): bool
+    public function toModelArray(): array
     {
-        $cpf = preg_replace('/[^0-9]/', '', $cpf);
-        
-        if (strlen($cpf) !== 11 || preg_match('/(\d)\1{10}/', $cpf)) {
-            return false;
-        }
+        $result = $this->toArray();
 
-        // Calculate first verification digit
-        $sum = 0;
-        for ($i = 0; $i < 9; $i++) {
-            $sum += intval($cpf[$i]) * (10 - $i);
-        }
-        $remainder = $sum % 11;
-        $digit1 = ($remainder < 2) ? 0 : 11 - $remainder;
+        unset($result['user']);
 
-        // Calculate second verification digit
-        $sum = 0;
-        for ($i = 0; $i < 10; $i++) {
-            $sum += intval($cpf[$i]) * (11 - $i);
-        }
-        $remainder = $sum % 11;
-        $digit2 = ($remainder < 2) ? 0 : 11 - $remainder;
-
-        return intval($cpf[9]) === $digit1 && intval($cpf[10]) === $digit2;
-    }
-
-    private function isValidDate(string $date): bool
-    {
-        $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
-        return $dateTime && $dateTime->format('Y-m-d') === $date;
+        return $result;
     }
 }

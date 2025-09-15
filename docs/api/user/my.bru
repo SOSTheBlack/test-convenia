@@ -7,11 +7,15 @@ meta {
 get {
   url: {{base-url}}{{prefix-api}}/user
   body: none
-  auth: none
+  auth: inherit
 }
 
 headers {
   : 
+}
+
+script:post-response {
+  bru.setEnvVar("token", res.body.access_token);
 }
 
 settings {

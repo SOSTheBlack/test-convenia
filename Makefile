@@ -66,13 +66,3 @@ restart: down up ## Reinicia os containers
 
 rebuild: ## Reconstruir e reiniciar completamente os containers
 	$(DOCKER_SCRIPTS)/restart-docker.sh
-
-fix: ## Exibe ajuda sobre comandos de permissão
-	@echo "Comandos de permissão disponíveis:"
-	@echo "  make fix-permissions  - Corrige permissões dos diretórios de escrita"
-	@echo "  make fix-all         - Corrige permissões de todos os arquivos"
-	@echo "  make fix-server      - Configura permissões para ambiente de produção"
-	@echo "  make fix-git         - Corrige problema de propriedade do Git"
-	@echo "  make fix-vscode      - Corrige permissões para desenvolvimento com VSCode"
-	@echo ""
-	@echo "Para opções avançadas: ./docker-run fix-permissions --help"

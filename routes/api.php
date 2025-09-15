@@ -1,48 +1,27 @@
 <?php
 
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Controllers\API\Auth\LoginController;
+use App\Http\Controllers\API\Auth\MyAuthController;
+use App\Http\Controllers\API\Employees\DestroyEmployeeController;
+use App\Http\Controllers\API\Employees\ListEmployeesController;
+use App\Http\Controllers\API\Employees\ShowEmployeeController;
+use App\Http\Controllers\API\Employees\UploadEmployeesController;
+use App\Http\Controllers\API\HealthController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
 
-Route::get('/user', function (Request $request) {
-    $user = User::firstOrFail();
-    return [...$user->toArray(), 'token' => $user->createToken('laravel')->accessToken];
-});
-
+Route::post('/auth/login', LoginController::class)->name('auth.login');
 
 Route::group(['middleware' => 'auth:api'], function () {
-    // Route::get('/user', function (Request $request) {
-    //     $user = $request->user();
-    //     return [...$user->toArray(), 'token' => $user->createToken('laravel')->accessToken];
-    // });
+    Route::get('/user', MyAuthController::class);
 
-    Route::get('/teste', function (Request $request) {
-        return 'teste';
-    })->name('teste');
+    Route::get('/teste', HealthController::class)->name('teste');
 
-    Route::get('/employees', \App\Http\Controllers\Employees\ListEmployeesController::class)
-        ->name('employees.get');
+    Route::get('/employees', ListEmployeesController::class)->name('employees.get');
 
-    Route::get('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'show'])
-        ->name('employees.show');
+    Route::get('/employees/{employee}', ShowEmployeeController::class)->name('employees.show');
 
-    Route::delete('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'destroy'])
-        ->name('employees.destroy');
+    Route::delete('/employees/{employee}', DestroyEmployeeController::class)->name('employees.destroy');
 
-    Route::post('/employees', \App\Http\Controllers\Employees\UploadEmployeesController::class)
-        ->name('employees.upload');
-
-    Route::get('/import-status/{jobId}', \App\Http\Controllers\Employees\ImportStatusController::class)
-        ->name('import.status');
+    Route::post('/employees', UploadEmployeesController::class)->name('employees.upload');
 });
