@@ -44,11 +44,11 @@ class UpdateNotificationCommand extends Command
                     $this->info('Notificações enviadas para o usuário: ' . $employeeGroup->first()->user->email);
                 });
 
-                Log::info('Notificações enviadas com sucesso!');
+            Log::info('Notificações enviadas com sucesso!');
 
             $this->info('Notificações enviadas com sucesso!');
             return Command::SUCCESS;
-        } catch(ModelNotFoundException $modelNotFoundException) {
+        } catch (ModelNotFoundException $modelNotFoundException) {
             $this->alert('Nenhum funcionário encontrado para notificar.');
             return Command::INVALID;
         } catch (Exception $exception) {

@@ -21,7 +21,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .header {
-            background-color: #5cb85c; /* Verde Convenia */
+            background-color: #5cb85c;
             color: white;
             padding: 20px;
             text-align: center;
@@ -29,12 +29,8 @@
             border-top-right-radius: 8px;
             margin: -20px -20px 20px -20px;
         }
-        .logo {
-            max-height: 50px;
-            margin-bottom: 15px;
-        }
         h1 {
-            color: #2e7d32; /* Verde escuro */
+            color: #2e7d32;
             margin-top: 30px;
             font-weight: 600;
         }
@@ -59,16 +55,16 @@
             border: 1px solid #e0e0e0;
         }
         th {
-            background-color: #81c784; /* Verde claro */
+            background-color: #81c784;
             color: #fff;
             font-weight: 600;
             border-bottom: 2px solid #5cb85c;
         }
         tr:nth-child(even) {
-            background-color: #f2f9f2; /* Verde muito claro */
+            background-color: #f2f9f2;
         }
         tr:hover {
-            background-color: #e8f5e9; /* Verde claro hover */
+            background-color: #e8f5e9;
         }
         .section-title {
             margin-top: 25px;
@@ -104,8 +100,7 @@
             font-weight: bold;
             margin-top: 10px;
         }
-        .badge-new {
-            background-color: #5cb85c;
+        .badge {
             color: white;
             font-size: 12px;
             padding: 3px 8px;
@@ -113,14 +108,11 @@
             margin-left: 5px;
             display: inline-block;
         }
+        .badge-created {
+            background-color: #5cb85c;
+        }
         .badge-updated {
             background-color: #2e7d32;
-            color: white;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 10px;
-            margin-left: 5px;
-            display: inline-block;
         }
     </style>
 </head>
@@ -133,93 +125,44 @@
 
         <p class="greeting">Olá, {{ $user->name }}!</p>
 
-        <p>Este é um relatório sobre funcionários que foram criados ou atualizados no sistema:</p>
+        <p>
+            {{ $employeeCount }} {{ $employeeCount === 1 ? 'funcionário foi' : 'funcionários foram' }}
+            <strong>{{ $actionText }}</strong> no sistema:
+        </p>
 
-    <!-- Seção de Novos Funcionários -->
-    <h2 class="section-title">
-        Novos Funcionários
-        <span class="badge-new">Novo</span>
-    </h2>
+        <h2 class="section-title">
+            Funcionários {{ $actionText }}
+            <span class="badge badge-{{ $action }}">{{ ucfirst($actionText) }}</span>
+        </h2>
 
-    @php
-        $newEmployees = $employees->filter(function($employee) {
-            return $employee->isNew;
-        });
-    @endphp
-
-    @if($newEmployees->count() > 0)
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Documento</th>
-                    <th>Cidade</th>
-                    <th>Estado</th>
-                    <th>Data de Início</th>
-                    <th>Data de Criação</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($newEmployees as $employee)
+        @if($employees->count() > 0)
+            <table>
+                <thead>
                     <tr>
-                        <td><strong>{{ $employee->name }}</strong></td>
-                        <td>{{ $employee->email }}</td>
-                        <td>{{ $employee->document }}</td>
-                        <td>{{ $employee->city }}</td>
-                        <td>{{ $employee->state }}</td>
-                        <td>{{ $employee->start_date }}</td>
-                        <td>{{ $employee->created_at->format('d/m/Y H:i:s') }}</td>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Documento</th>
+                        <th>Cidade</th>
+                        <th>Estado</th>
+                        <th>Data de Início</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p class="no-data">Nenhum novo funcionário foi adicionado.</p>
-    @endif
-
-    <!-- Seção de Funcionários Atualizados -->
-    <h2 class="section-title">
-        Funcionários Atualizados
-        <span class="badge-updated">Atualizado</span>
-    </h2>
-
-    @php
-        $updatedEmployees = $employees->filter(function($employee) {
-            return $employee->created_at->format('Y-m-d H:i:s') !== $employee->updated_at->format('Y-m-d H:i:s');
-        });
-    @endphp
-
-    @if($updatedEmployees->count() > 0)
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Documento</th>
-                    <th>Cidade</th>
-                    <th>Estado</th>
-                    <th>Data de Início</th>
-                    <th>Data de Atualização</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($updatedEmployees as $employee)
-                    <tr>
-                        <td><strong>{{ $employee->name }}</strong></td>
-                        <td>{{ $employee->email }}</td>
-                        <td>{{ $employee->document }}</td>
-                        <td>{{ $employee->city }}</td>
-                        <td>{{ $employee->state }}</td>
-                        <td>{{ $employee->start_date }}</td>
-                        <td>{{ $employee->updated_at->format('d/m/Y H:i:s') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p class="no-data">Nenhum funcionário foi atualizado.</p>
-    @endif
+                </thead>
+                <tbody>
+                    @foreach($employees as $employee)
+                        <tr>
+                            <td><strong>{{ $employee->name }}</strong></td>
+                            <td>{{ $employee->email }}</td>
+                            <td>{{ $employee->document }}</td>
+                            <td>{{ $employee->city }}</td>
+                            <td>{{ $employee->state }}</td>
+                            <td>{{ $employee->startDate }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p class="no-data">Nenhum funcionário foi processado.</p>
+        @endif
 
         <div class="footer">
             <p>Precisa de ajuda com o sistema de RH? Entre em contato conosco:</p>

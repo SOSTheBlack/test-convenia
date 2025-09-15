@@ -1,34 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Eloquent;
 
 use App\DTO\EmployeeData;
 use App\Models\Employee;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
+use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 class EmployeeRepository implements EmployeeRepositoryInterface
 {
-    private Employee $model;
-
-    public function __construct()
-    {
-        $this->model = new Employee();
+    public function __construct(
+        private readonly Employee $model,
+        private readonly LoggerInterface $logger
+    ) {
     }
 
-    public function findByDocument(string $document): ?Employee
+    public function findByDocument(string $document): Employee
     {
         return $this->model->where('document', $document)->firstOrFail();
     }
 
     public function create(EmployeeData $data): Employee
     {
-        $model = $this->model->create($data->toArray());
+        $model = $this->model->create($data->toModelArray());
 
         if (!$model) {
-            throw new \Exception('Falha ao criar o modelo');
+            throw new Exception('Falha ao criar o modelo');
         }
 
         return $model;
@@ -37,25 +40,26 @@ class EmployeeRepository implements EmployeeRepositoryInterface
     public function createOrUpdateMany(Collection $data): void
     {
         if ($data->isEmpty()) {
-            Log::error('IS EMPTYYYYYYYYYYYYY');
+            $this->logger->error('Tentativa de criar/atualizar com coleção vazia');
             return;
         }
 
         $this->model->upsert(
             $data->map(function (EmployeeData $item) {
-                Log::info('ITEM', $item->toArray());
+                $this->logger->info('Processando item para upsert', $item->toModelArray());
                 return $item->toModelArray();
             })->toArray(),
-
-            // $data->map(fn(EmployeeData $item) => $item->setSendNotification(true)->toModelArray())->toArray(),
             ['document'],
             $this->model->getFillable()
         );
 
-        Log::alert('SALVOOOOOOOOOOOOOOOOOOOOOOOOU');
+        $this->logger->info('Operação de upsert concluída com sucesso');
     }
 
-    public function findByUser(int $userId, array $filters = [], int $perPage = 15)
+    /**
+     * @param array<string, mixed> $filters
+     */
+    public function findByUser(int $userId, array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = $this->model->where('user_id', $userId);
 
@@ -72,15 +76,22 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             ->where('send_notification', true)
             ->where('updated_at', '>=', now()->subDays($days));
 
-        if (!is_null($userId)) {
+        if ($userId !== null) {
             $query->where('user_id', $userId);
         }
 
         $results = $query->get();
 
-        return $results->isEmpty() ? throw new ModelNotFoundException('Nenhum registro encontrado.') : $results;
+        if ($results->isEmpty()) {
+            throw new ModelNotFoundException('Nenhum registro encontrado.');
+        }
+
+        return $results;
     }
 
+    /**
+     * @param array<int> $employeeIds
+     */
     public function updateNotificationStatus(array $employeeIds, bool $status): void
     {
         $this->model

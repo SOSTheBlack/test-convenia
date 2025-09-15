@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO;
 
 use Illuminate\Support\Carbon;
@@ -12,11 +14,11 @@ class EmployeeData
         public readonly string $document,
         public readonly string $city,
         public readonly string $state,
-        public readonly string $start_date,
-        public readonly int $user_id,
-        public readonly ?Carbon $updated_at = null,
+        public readonly string $startDate,
+        public readonly int $userId,
+        public readonly ?Carbon $updatedAt = null,
         public readonly ?UserData $user = null,
-        public ?bool $send_notification = false,
+        public readonly bool $sendNotification = false,
     ) {
     }
 
@@ -28,9 +30,9 @@ class EmployeeData
             document: preg_replace('/[^0-9]/', '', $data['document'] ?? ''),
             city: trim($data['city'] ?? ''),
             state: trim($data['state'] ?? ''),
-            start_date: $data['start_date'] ?? '',
-            user_id: $userId,
-            send_notification: $data['send_notification'] ?? false
+            startDate: $data['start_date'] ?? '',
+            userId: $userId,
+            sendNotification: $data['send_notification'] ?? false
         );
     }
 
@@ -42,10 +44,10 @@ class EmployeeData
             document: $employee->document,
             city: $employee->city,
             state: $employee->state->value,
-            start_date: $employee->start_date,
-            updated_at: $employee->updated_at,
-            user_id: $employee->user_id,
-            send_notification: $employee->send_notification,
+            startDate: $employee->start_date->format('Y-m-d'),
+            updatedAt: $employee->updated_at,
+            userId: $employee->user_id,
+            sendNotification: $employee->send_notification,
             user: $employee->user ? UserData::fromModel($employee->user) : null
         );
     }
@@ -58,26 +60,33 @@ class EmployeeData
             'document' => $this->document,
             'city' => $this->city,
             'state' => $this->state,
-            'start_date' => $this->start_date,
-            'user_id' => $this->user_id,
-            'send_notification' => $this->send_notification,
-            'user' => $this->user ? $this->user->toArray() : null
+            'start_date' => $this->startDate,
+            'user_id' => $this->userId,
+            'send_notification' => $this->sendNotification,
+            'user' => $this->user?->toArray()
         ];
     }
 
-    public function setSendNotification(bool $send): self
+    public function withSendNotification(bool $send): self
     {
-        $this->send_notification = $send;
-
-        return $this;
+        return new self(
+            name: $this->name,
+            email: $this->email,
+            document: $this->document,
+            city: $this->city,
+            state: $this->state,
+            startDate: $this->startDate,
+            userId: $this->userId,
+            updatedAt: $this->updatedAt,
+            user: $this->user,
+            sendNotification: $send
+        );
     }
 
     public function toModelArray(): array
     {
         $result = $this->toArray();
-
         unset($result['user']);
-
         return $result;
     }
 }
