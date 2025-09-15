@@ -23,14 +23,6 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return $this->model->where('document', $document)->firstOrFail();
     }
 
-    public function createOrUpdate(EmployeeData $data): Employee
-    {
-        return $this->model->updateOrCreate(
-            ['document' => $data->document],
-            $data->toArray()
-        );
-    }
-
     public function create(EmployeeData $data): Employee
     {
         $model = $this->model->create($data->toArray());

@@ -5,13 +5,13 @@ namespace App\DTO;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-class UserData
+readonly class UserData
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $email,
-        public readonly ?string $password = null,
-        public readonly ?\DateTime $email_verified_at = null
+        public string $name,
+        public string $email,
+        public ?string $password = null,
+        public ?\DateTime $email_verified_at = null
     ) {
     }
 

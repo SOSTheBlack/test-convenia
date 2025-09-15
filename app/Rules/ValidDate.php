@@ -39,10 +39,10 @@ class ValidDate implements ValidationRule
 
             // Verifica se a data é válida no calendário
             if (!$date || $date->format($this->format) !== $value) {
-                $fail('The :attribute contains a date that does not exist in the calendar.');
+                $fail('O campo :attribute contém uma data que não existe no calendário.');
             }
         } catch (\Exception $e) {
-            $fail('The :attribute does not match the format ' . $this->format);
+            $fail('O campo :attribute não corresponde ao formato ' . $this->format);
         }
     }
 }

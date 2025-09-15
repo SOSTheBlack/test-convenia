@@ -21,7 +21,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::get('/employees/{employee}', ShowEmployeeController::class)->name('employees.show');
 
-    Route::delete('/employees/{employee}', [DestroyEmployeeController::class, 'destroy'])->name('employees.destroy');
+    Route::delete('/employees/{employee}', DestroyEmployeeController::class)->name('employees.destroy');
 
     Route::post('/employees', UploadEmployeesController::class)->name('employees.upload');
 });

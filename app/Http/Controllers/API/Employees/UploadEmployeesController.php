@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\API\Employees;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EmployeeImportRequest;
-use App\Repositories\Contracts\EmployeeRepositoryInterface;
+use App\Http\Requests\Employees\EmployeeImportRequest;
 use App\Services\Employees\EmployeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;

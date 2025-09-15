@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Employees;
 
 use App\Imports\EmployeesImport;
 use Illuminate\Foundation\Http\FormRequest;

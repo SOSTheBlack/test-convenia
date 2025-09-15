@@ -76,9 +76,11 @@ class ImportCsvResource
         } catch (ModelNotFoundException $exception) {
             $previousEmployee = null;
             $employee = $this->employeeRepository->create($data);
-            Log::info("Service created employee with document {$data->document}", ['employee' => $employee->toArray()]);
+            Log::info("Criado novo funcionário {$data->document}", ['employee' => $employee->toArray()]);
+        } catch (CsvImportException $csvImportException) {
+            $employee = null;
         } catch (Throwable $exception) {
-            Log::error("ERRRRRRO ao criar ou atualizar {$data->document}", ['error' => $exception->getMessage()]);
+            Log::error("Não foi possível criar/atualizar {$data->document}", ['error' => $exception->getMessage()]);
         } finally {
             if ($previousEmployee !== false) {
                 Log::info("Note updating or creating employee with document {$data->document}", ['employee' => $employee->toArray(), 'previous' => $previousEmployee ? $previousEmployee->toArray() : null]);
@@ -87,17 +89,6 @@ class ImportCsvResource
 
             return $employee ?? null;
         }
-    }
-
-    public function getEmployeesByUser(int $userId, array $filters = [], int $perPage = 15)
-    {
-        return $this->employeeRepository->findByUser($userId, $filters, $perPage);
-    }
-
-    public function csvStorageIn(\Illuminate\Http\UploadedFile $file): string
-    {
-        $fileName = 'temp_csv_employee_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        return $file->storeAs('temp',  $fileName);
     }
 
     private function eventDispatch(Employee $employee, ?Employee $previousEmployee): void

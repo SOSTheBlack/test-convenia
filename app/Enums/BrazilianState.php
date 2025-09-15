@@ -85,28 +85,4 @@ enum BrazilianState: string
             self::cases()
         );
     }
-
-    /**
-     * Get all states as an associative array with UF as key and name as value.
-     *
-     * @return array
-     */
-    public static function toAssociativeArray(): array
-    {
-        return array_combine(
-            array_map(fn (self $state) => $state->value, self::cases()),
-            array_map(fn (self $state) => $state->getName(), self::cases())
-        );
-    }
-
-    /**
-     * Try to get a state from a UF.
-     *
-     * @param string $uf
-     * @return self|null
-     */
-    public static function tryFromUF(string $uf): ?self
-    {
-        return self::tryFrom(strtoupper($uf));
-    }
 }

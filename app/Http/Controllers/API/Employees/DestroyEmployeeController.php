@@ -12,8 +12,16 @@ class DestroyEmployeeController extends ApiController
     {
         $this->authorize('employee', $employee);
 
-        return response()->json([
-            'Success' => $employee->delete()
-        ]);
+        try {
+            return response()->json([
+                'success' => $employee->delete()
+            ]);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Erro ao excluir funcionário.',
+                'details' => $exception->getMessage()
+            ], 500);
+        }
     }
 }

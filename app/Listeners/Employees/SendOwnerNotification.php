@@ -18,14 +18,10 @@ class SendOwnerNotification implements ShouldQueue
         $employee = $event->employee;
         $user = $event->user;
 
-        Log::info("Listener notifying user {$user->email}", ['employee' => $employee->toArray(), 'previous' => $event->previousEmployee ? $event->previousEmployee->toArray() : null]);
-
         // Enviar a notificação usando o sistema de notificações
         $user->notify(
             new EmployeeUpdatedNotification(
-                $employee,
-                $user,
-                $event->previousEmployee
+                collect([$employee]),
             )
         );
     }

@@ -2,17 +2,13 @@
 
 namespace App\Notifications;
 
-use App\DTO\EmployeeData;
-use App\DTO\UserData;
 use App\Models\Employee;
-use App\Models\User;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class EmployeeUpdatedNotification extends Notification implements ShouldQueue
 {
@@ -20,16 +16,7 @@ class EmployeeUpdatedNotification extends Notification implements ShouldQueue
 
     public function __construct(
         public Collection $employees,
-        // public User $user,
-        // public ?EmployeeData $previousEmployee = null
     ) {
-    }
-
-    public function afterCommit()
-    {
-        // Após enviar a notificação, atualizar o campo send_notification para false
-        $employeeRepository = app(EmployeeRepositoryInterface::class);
-        $employeeRepository->updateNotificationStatus($this->employees->pluck('id')->toArray(), false);
     }
 
     /**
