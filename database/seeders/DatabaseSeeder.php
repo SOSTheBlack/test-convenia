@@ -22,14 +22,6 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Admin User',
                 'email' => 'admin@example.com',
             ])->create();
-        } finally {
-            echo "Usuário criado:\n";
-            echo "Email: {$user->email}\n";
-
-            if (!app()->environment('testing')) {
-                echo "Use este token para autenticação Bearer:\n";
-                echo $user->createToken('laravel')->accessToken . "\n";
-            }
         }
     }
 }

@@ -31,18 +31,15 @@ Route::group(['middleware' => 'auth:api'], function () {
         return 'teste';
     })->name('teste');
 
-    Route::get('/employees', \App\Http\Controllers\Employees\ListEmployeesController::class)
+    Route::get('/employees', \App\Http\Controllers\API\Employees\ListEmployeesController::class)
         ->name('employees.get');
 
-    Route::get('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'show'])
+    Route::get('/employees/{employee}', [\App\Http\Controllers\API\Employees\EmployeeController::class, 'show'])
         ->name('employees.show');
 
-    Route::delete('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'destroy'])
+    Route::delete('/employees/{employee}', [\App\Http\Controllers\API\Employees\EmployeeController::class, 'destroy'])
         ->name('employees.destroy');
 
-    Route::post('/employees', \App\Http\Controllers\Employees\UploadEmployeesController::class)
+    Route::post('/employees', \App\Http\Controllers\API\Employees\UploadEmployeesController::class)
         ->name('employees.upload');
-
-    Route::get('/import-status/{jobId}', \App\Http\Controllers\Employees\ImportStatusController::class)
-        ->name('import.status');
 });

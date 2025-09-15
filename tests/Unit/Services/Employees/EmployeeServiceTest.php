@@ -6,7 +6,7 @@ use App\DTO\EmployeeData;
 use App\Events\EmployeeUpdated;
 use App\Models\Employee;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
-use App\Services\EmployeeService;
+use App\Services\Employees\EmployeeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Mockery;
@@ -22,7 +22,7 @@ class EmployeeServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->repositoryMock = Mockery::mock(EmployeeRepositoryInterface::class);
         $this->service = new EmployeeService($this->repositoryMock);
     }
