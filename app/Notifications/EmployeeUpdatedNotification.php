@@ -68,32 +68,6 @@ class EmployeeUpdatedNotification extends Notification implements ShouldQueue
         return $mail;
 
 
-        // $this->employees->each(function (Employee $employee) {
-        //     $this->user = UserData::fromModel($employee->user);
-        //     $this->employee = EmployeeData::fromModel($employee);
-        //     $this->previousEmployee = $employee->wasChanged() ? EmployeeData::fromModel($employee->getOriginal()) : null;
-
-        //     $this->sendEmail($notifiable);
-        // });
-
-
-
-        // $isNew = $this->previousEmployee === null;
-        // $subject = vsprintf('Funcionário %s - %s', [$isNew ? 'Criado' : 'Atualizado', $this->employee->name]);
-        // Log::info("Preparing email notification: {$subject}", ['employee' => $this->employee->toArray(), 'previous' => $this->previousEmployee ? $this->previousEmployee->toArray() : null, 'user' => $this->user->toArray()]);
-
-        // return (new MailMessage)
-        //     ->subject($subject)
-        //     ->from($this->user->email, $this->user->name)
-        //     ->view(
-        //         'emails.employee-update',
-        //         [
-        //             'employee' => $this->employee,
-        //             'user' => $this->user,
-        //             'previousEmployee' => $this->previousEmployee,
-        //             'isNew' => $isNew
-        //         ]
-        //     );
     }
 
     /**
