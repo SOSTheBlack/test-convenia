@@ -1,20 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HealthController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $dbStatus = $this->checkDatabaseConnection();
 
@@ -30,16 +28,14 @@ class HealthController extends Controller
     }
 
     /**
-     * Check database connection.
-     *
-     * @return array
+     * @return array<string, string>
      */
     private function checkDatabaseConnection(): array
     {
         try {
             DB::connection()->getPdo();
             return ['status' => 'ok'];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['status' => 'error', 'message' => $e->getMessage()];
         }
     }

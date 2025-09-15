@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\BrazilianState;
@@ -14,7 +16,7 @@ class Employee extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'user_id',
@@ -30,7 +32,7 @@ class Employee extends Model
     /**
      * The attributes that should be hidden for arrays.
      *
-     * @var array
+     * @var list<string>
      */
     protected $hidden = [
         'created_at',
@@ -40,7 +42,7 @@ class Employee extends Model
     /**
      * The attributes that should be cast.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $casts = [
         'user_id' => 'integer',
@@ -75,8 +77,8 @@ class Employee extends Model
     /**
      * Set document attribute (remove formatting)
      */
-    public function setDocumentAttribute($value): void
+    public function setDocumentAttribute(?string $value): void
     {
-        $this->attributes['document'] = preg_replace('/[^0-9]/', '', $value);
+        $this->attributes['document'] = $value ? preg_replace('/[^0-9]/', '', $value) : null;
     }
 }

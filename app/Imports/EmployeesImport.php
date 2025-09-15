@@ -1,104 +1,112 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Imports;
 
 use App\DTO\EmployeeData;
 use App\Enums\BrazilianState;
-use App\Models\Employee;
-use App\Repositories\Contracts\EmployeeRepositoryInterface;
-use App\Services\Employees\EmployeeService;
+use App\Rules\ValidDate;
+use App\Services\Contracts\EmployeeServiceInterface;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
-use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 class EmployeesImport implements ToCollection, WithHeadingRow, WithChunkReading, WithUpserts, ShouldQueue, SkipsEmptyRows, WithBatchInserts
 {
-    private EmployeeService $employeeService;
+    private EmployeeServiceInterface $employeeService;
+    private LoggerInterface $logger;
 
-    public function __construct(private int $userId)
+    public function __construct(private readonly int $userId)
     {
-        $this->employeeService = app(EmployeeService::class);
+        $this->employeeService = app(EmployeeServiceInterface::class);
+        $this->logger = app(LoggerInterface::class);
     }
 
-    public function collection(Collection $rows)
+    public function collection(Collection $rows): void
     {
-        // Mapeia os dados brutos do CSV para objetos EmployeeData
-        $employeeDataCollection = $rows->map(fn (Collection $employee) => new EmployeeData(
-            user_id: $this->userId,
-            name: $employee['name'],
-            email: $employee['email'],
-            document: Str::of($employee['document'])->trim()->numbers(),
-            city: $employee['city'],
-            state: BrazilianState::from($employee['state'])->value,
-            start_date: Carbon::parse($employee['start_date'])->format('Y-m-d')
-        ));
+        $employeeDataCollection = $rows->map(function (Collection $employee) {
+            return new EmployeeData(
+                userId: $this->userId,
+                name: $employee['name'],
+                email: $employee['email'],
+                document: Str::of($employee['document'])->trim()->numbers()->toString(),
+                city: $employee['city'],
+                state: BrazilianState::from($employee['state'])->value,
+                startDate: Carbon::parse($employee['start_date'])->format('Y-m-d'),
+                sendNotification: true
+            );
+        });
 
-        // Filtra apenas os registros que precisam ser criados ou atualizados
-        $dataToUpsert = collect();
+        $dataToProcess = collect();
 
         foreach ($employeeDataCollection as $employeeData) {
             try {
-                // Tenta encontrar o funcionário pelo documento
-                /** @var Employee|null $existingEmployee */
-                $existingEmployee = app(EmployeeRepositoryInterface::class)->findByDocument($employeeData->document);
+                $existingEmployee = $this->employeeService->findByDocument($employeeData->document);
 
                 if ($existingEmployee) {
-                    // Cria uma cópia para preservar o estado original
-                    $originalEmployee = clone $existingEmployee;
+                    $originalData = EmployeeData::fromModel($existingEmployee);
 
-                    $employDataToFill = $employeeData->toArray();
-                    unset($employDataToFill['send_notification']);
-
-                    // Preenche o modelo com os novos dados
-                    $existingEmployee->fill($employeeData->toArray());
-
-                    Log::info('===========', ['isDirty' => $existingEmployee->isDirty(), 'changes' => $existingEmployee->getDirty(), 'original' => $originalEmployee->toArray(), 'new' => $existingEmployee->toArray()]);
-
-                    // Verifica se houve alguma mudança
-                    if ($existingEmployee->isDirty()) {
-                        $existingEmployee->send_notification = true;
-                        $dataToUpsert->push(EmployeeData::fromModel($existingEmployee));
-
-                        Log::info("Dados modificados para documento {$existingEmployee->document}", ['changed_fields' => $existingEmployee->getDirty()]);
+                    // Verifica se houve mudanças
+                    if ($this->hasChanges($originalData, $employeeData)) {
+                        $dataToProcess->push($employeeData->withSendNotification(true));
+                        $this->logger->info("Data changed for document {$employeeData->document}");
+                    } else {
+                        $this->logger->info("No changes for document {$employeeData->document}");
                     }
+                } else {
+                    $dataToProcess->push($employeeData);
+                    $this->logger->info("New employee with document {$employeeData->document}");
                 }
-            } catch (\Exception $e) {
-                // Em caso de erro, adiciona o registro completo para tentativa de criação
-                Log::error('Erro ao processar funcionário: ' . $e->getMessage(), [
+            } catch (Exception $e) {
+                $this->logger->error('Error processing employee: ' . $e->getMessage(), [
                     'document' => $employeeData->document
                 ]);
-                $employeeData->setSendNotification(true);
-                $dataToUpsert->push($employeeData);
+                $dataToProcess->push($employeeData);
             }
         }
 
-        Log::info('Registros para upsert', ['count' => $dataToUpsert->count()]);
+        $this->logger->info('Records to process', ['count' => $dataToProcess->count()]);
 
-        // Se houver dados para upsert, processa
-        if ($dataToUpsert->isNotEmpty()) {
-            $this->employeeService->importFile()->createOrUpdateEmployees($dataToUpsert);
-            Log::alert('Processamento de upsert finalizado com sucesso');
+        if ($dataToProcess->isNotEmpty()) {
+            foreach ($dataToProcess as $employeeData) {
+                $this->employeeService->createOrUpdateEmployee($employeeData);
+            }
+            $this->logger->info('Processing completed successfully');
         } else {
-            Log::info('Nenhum registro precisa ser atualizado ou criado');
+            $this->logger->info('No records need to be updated or created');
         }
     }
 
+    private function hasChanges(EmployeeData $original, EmployeeData $new): bool
+    {
+        return $original->name !== $new->name ||
+               $original->email !== $new->email ||
+               $original->city !== $new->city ||
+               $original->state !== $new->state ||
+               $original->startDate !== $new->startDate;
+    }
+
     /**
-     * @return string|array
+     * @return string|array<string>
      */
-    public function uniqueBy()
+    public function uniqueBy(): string|array
     {
         return ['document'];
     }
 
+    /**
+     * @return array<string, array<int, string|\App\Rules\ValidDate>>
+     */
     public function rules(): array
     {
         return [
@@ -107,7 +115,7 @@ class EmployeesImport implements ToCollection, WithHeadingRow, WithChunkReading,
             'document' => ['required', 'numeric'],
             'city' => ['required', 'string'],
             'state' => ['required', 'string', 'size:2'],
-            'start_date' => ['required', new \App\Rules\ValidDate('Y-m-d')],
+            'start_date' => ['required', new ValidDate('Y-m-d')],
         ];
     }
 

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO;
 
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 readonly class UserData
@@ -11,54 +14,33 @@ readonly class UserData
         public string $name,
         public string $email,
         public ?string $password = null,
-        public ?\DateTime $email_verified_at = null
+        public ?Carbon $emailVerifiedAt = null
     ) {
     }
 
-    /**
-     * Create UserData from array
-     *
-     * @param array $data
-     * @return self
-     */
     public static function fromArray(array $data): self
     {
         $emailVerifiedAt = isset($data['email_verified_at'])
-            ? new \DateTime($data['email_verified_at'])
+            ? Carbon::parse($data['email_verified_at'])
             : null;
 
         return new self(
             name: trim($data['name'] ?? ''),
             email: trim($data['email'] ?? ''),
             password: $data['password'] ?? null,
-            email_verified_at: $emailVerifiedAt
+            emailVerifiedAt: $emailVerifiedAt
         );
     }
 
-    /**
-     * Create UserData from User model
-     *
-     * @param User $user
-     * @return self
-     */
     public static function fromModel(User $user): self
     {
-        $emailVerifiedAt = $user->email_verified_at
-            ? new \DateTime($user->email_verified_at)
-            : null;
-
         return new self(
             name: $user->name,
             email: $user->email,
-            email_verified_at: $emailVerifiedAt
+            emailVerifiedAt: $user->email_verified_at
         );
     }
 
-    /**
-     * Convert to array
-     *
-     * @return array
-     */
     public function toArray(): array
     {
         $data = [
@@ -70,23 +52,17 @@ readonly class UserData
             $data['password'] = $this->password;
         }
 
-        if ($this->email_verified_at !== null) {
-            $data['email_verified_at'] = $this->email_verified_at->format('Y-m-d H:i:s');
+        if ($this->emailVerifiedAt !== null) {
+            $data['email_verified_at'] = $this->emailVerifiedAt->format('Y-m-d H:i:s');
         }
 
         return $data;
     }
 
-    /**
-     * Convert to array for database
-     *
-     * @return array
-     */
     public function toDatabase(): array
     {
         $data = $this->toArray();
 
-        // Hash password if it exists
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
@@ -94,11 +70,6 @@ readonly class UserData
         return $data;
     }
 
-    /**
-     * Validate user data
-     *
-     * @return array Validation errors
-     */
     public function validate(): array
     {
         $errors = [];
@@ -111,11 +82,8 @@ readonly class UserData
             $errors['email'] = 'O e-mail é obrigatório e deve ser válido.';
         }
 
-        // Validate password only if it is being set/updated
-        if ($this->password !== null) {
-            if (strlen($this->password) < 8) {
-                $errors['password'] = 'A senha deve ter pelo menos 8 caracteres.';
-            }
+        if ($this->password !== null && strlen($this->password) < 8) {
+            $errors['password'] = 'A senha deve ter pelo menos 8 caracteres.';
         }
 
         return $errors;

@@ -8,7 +8,6 @@ use Illuminate\Http\JsonResponse;
 
 class ShowEmployeeController extends ApiController
 {
-
     public function __invoke(Employee $employee): JsonResponse
     {
         $this->authorize('employee', $employee);

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
-use App\Models\Employee;
-use App\Repositories\Contracts\EmployeeRepositoryInterface;
+use App\DTO\EmployeeData;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -15,13 +16,12 @@ class EmployeeUpdatedNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public Collection $employees,
+        public readonly Collection $employees,
+        public readonly string $action = 'updated'
     ) {
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -29,52 +29,65 @@ class EmployeeUpdatedNotification extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
-        $user = $this->employees->first()->user;
-        $this->employees->map(fn(Employee $employee) => $employee->isNew = $employee->created_at->equalTo($employee->updated_at));
+        $subject = $this->getSubject();
+        $viewData = $this->getViewData($notifiable);
 
-        $mail = (new MailMessage)
-            ->subject('Funcionários Criados/Atualizados')
-            ->from($user->email, $user->name)
-            ->view(
-                'emails.employee-update',
-                [
-                    'employees' => $this->employees,
-                    'user' => $user,
-                ]
-            );
-
-        // Após enviar a notificação, atualizar o campo send_notification para false
-        $employeeRepository = app(EmployeeRepositoryInterface::class);
-        $employeeRepository->updateNotificationStatus($this->employees->pluck('id')->toArray(), false);
-
-        return $mail;
-
-
+        return (new MailMessage())
+            ->subject($subject)
+            ->view('emails.employee-update', $viewData);
     }
 
     /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
-        $user = $this->employees->first()->user;
-
         return [
-            'employee_ids' => $this->employees->pluck('id')->toArray(),
-            'updated_by' => $user->id,
-            'new_employees_count' => $this->employees->filter(function($employee) {
-                return $employee->created_at->format('Y-m-d H:i:s') === $employee->updated_at->format('Y-m-d H:i:s');
-            })->count(),
-            'updated_employees_count' => $this->employees->filter(function($employee) {
-                return $employee->created_at->format('Y-m-d H:i:s') !== $employee->updated_at->format('Y-m-d H:i:s');
-            })->count(),
+            'action' => $this->action,
+            'employee_count' => $this->employees->count(),
+            'employees' => $this->employees->map(fn (EmployeeData $employee) => [
+                'name' => $employee->name,
+                'email' => $employee->email,
+                'document' => $employee->document,
+            ])->toArray(),
+            'notified_at' => now()->toISOString(),
         ];
+    }
+
+    private function getSubject(): string
+    {
+        $count = $this->employees->count();
+        $employeeText = $count === 1 ? 'funcionário' : 'funcionários';
+
+        return match ($this->action) {
+            'created' => "Novo funcionário criado: {$count} {$employeeText}",
+            'updated' => "Funcionário atualizado: {$count} {$employeeText}",
+            default => "Funcionários processados: {$count} {$employeeText}",
+        };
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getViewData(object $notifiable): array
+    {
+        return [
+            'user' => $notifiable,
+            'employees' => $this->employees,
+            'action' => $this->action,
+            'employeeCount' => $this->employees->count(),
+            'actionText' => $this->getActionText(),
+        ];
+    }
+
+    private function getActionText(): string
+    {
+        return match ($this->action) {
+            'created' => 'criado(s)',
+            'updated' => 'atualizado(s)',
+            default => 'processado(s)',
+        };
     }
 }
