@@ -15,7 +15,8 @@ class EmployeeData
         public readonly string $start_date,
         public readonly int $user_id,
         public readonly ?Carbon $updated_at = null,
-        public readonly ?UserData $user = null
+        public readonly ?UserData $user = null,
+        public ?bool $send_notification = false,
     ) {
     }
 
@@ -28,7 +29,8 @@ class EmployeeData
             city: trim($data['city'] ?? ''),
             state: trim($data['state'] ?? ''),
             start_date: $data['start_date'] ?? '',
-            user_id: $userId
+            user_id: $userId,
+            send_notification: $data['send_notification'] ?? false
         );
     }
 
@@ -43,6 +45,7 @@ class EmployeeData
             start_date: $employee->start_date,
             updated_at: $employee->updated_at,
             user_id: $employee->user_id,
+            send_notification: $employee->send_notification,
             user: $employee->user ? UserData::fromModel($employee->user) : null
         );
     }
@@ -57,8 +60,16 @@ class EmployeeData
             'state' => $this->state,
             'start_date' => $this->start_date,
             'user_id' => $this->user_id,
+            'send_notification' => $this->send_notification,
             'user' => $this->user ? $this->user->toArray() : null
         ];
+    }
+
+    public function setSendNotification(bool $send): self
+    {
+        $this->send_notification = $send;
+
+        return $this;
     }
 
     public function toModelArray(): array

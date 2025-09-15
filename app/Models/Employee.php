@@ -23,6 +23,7 @@ class Employee extends Model
         'document',
         'city',
         'state',
+        'send_notification',
         'start_date',
     ];
 
@@ -44,6 +45,7 @@ class Employee extends Model
     protected $casts = [
         'user_id' => 'integer',
         'state' => BrazilianState::class,
+        'send_notification' => 'boolean',
         'start_date' => 'date',
     ];
 

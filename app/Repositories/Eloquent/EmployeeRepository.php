@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\DTO\EmployeeData;
 use App\Models\Employee;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -49,7 +50,12 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         }
 
         $this->model->upsert(
-            $data->map(fn (EmployeeData $item) => $item->toModelArray())->toArray(),
+            $data->map(function (EmployeeData $item) {
+                Log::info('ITEM', $item->toArray());
+                return $item->toModelArray();
+            })->toArray(),
+
+            // $data->map(fn(EmployeeData $item) => $item->setSendNotification(true)->toModelArray())->toArray(),
             ['document'],
             $this->model->getFillable()
         );
@@ -66,5 +72,27 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         }
 
         return $query->paginate($perPage);
+    }
+
+    public function findToNotify(?int $userId = null, int $days = self::NOTIFICATION_DAYS): Collection
+    {
+        $query = $this->model
+            ->where('send_notification', true)
+            ->where('updated_at', '>=', now()->subDays($days));
+
+        if (!is_null($userId)) {
+            $query->where('user_id', $userId);
+        }
+
+        $results = $query->get();
+
+        return $results->isEmpty() ? throw new ModelNotFoundException('Nenhum registro encontrado.') : $results;
+    }
+
+    public function updateNotificationStatus(array $employeeIds, bool $status): void
+    {
+        $this->model
+            ->whereIn('id', $employeeIds)
+            ->update(['send_notification' => $status]);
     }
 }
